@@ -4,6 +4,10 @@ import javax.swing.text.JTextComponent;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class RegistrationFormCRUD extends JFrame {
 
@@ -30,12 +34,19 @@ public class RegistrationFormCRUD extends JFrame {
 
     int selectedRow = -1;
 
+    // ===== JDBC VARIABLES =====
+    Connection con;
+    PreparedStatement pst;
+    ResultSet rs;
+
     public RegistrationFormCRUD() {
 
         setTitle("Registration Form - CRUD Operations");
         setSize(1200, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+
+        connectDB();
 
         JPanel panel = new JPanel();
         panel.setBackground(new Color(245, 247, 250));
@@ -235,6 +246,7 @@ public class RegistrationFormCRUD extends JFrame {
 
         // ===== Table =====
         String columns[] = {
+                "ID",
                 "Name",
                 "Email",
                 "Phone",
@@ -325,7 +337,7 @@ public class RegistrationFormCRUD extends JFrame {
 
                 selectedRow = table.getSelectedRow();
 
-                txtName.setText(model.getValueAt(selectedRow, 0).toString());
+                txtName.setText(model.getValueAt(selectedRow, 1).toString());
                 txtEmail.setText(model.getValueAt(selectedRow, 1).toString());
                 txtPhone.setText(model.getValueAt(selectedRow, 2).toString());
 
@@ -359,13 +371,17 @@ public class RegistrationFormCRUD extends JFrame {
         });
 
         add(panel);
+
+        loadTable();
+
         setVisible(true);
     }
 
     // ===== ADD RECORD =====
     public void addRecord() {
 
-        String name = txtName.getText().trim();
+        String name = 
+                capitalizeWords(txtName.getText().trim());
         String email = txtEmail.getText().trim();
         String phone = txtPhone.getText().trim();
 
@@ -434,19 +450,37 @@ public class RegistrationFormCRUD extends JFrame {
 
         String bio = bioArea.getText();
 
-        model.addRow(new Object[]{
-                name,
-                email,
-                phone,
-                gender,
-                skills,
-                country,
-                age,
-                address,
-                bio
-        });
+        try {
 
-        JOptionPane.showMessageDialog(this, "Record Added Successfully");
+            String query =
+                    "INSERT INTO students " +
+                    "(name,email,password,phone,gender,skills,country,age,address,bio) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?)";
+        
+            pst = con.prepareStatement(query);
+        
+            pst.setString(1, name);
+            pst.setString(2, email);
+            pst.setString(3, txtPassword.getText());
+            pst.setString(4, phone);
+            pst.setString(5, gender);
+            pst.setString(6, skills);
+            pst.setString(7, country);
+            pst.setInt(8, age);
+            pst.setString(9, address);
+            pst.setString(10, bio);
+        
+            pst.executeUpdate();
+        
+            JOptionPane.showMessageDialog(this,
+                    "Record Added Successfully");
+
+                    loadTable();
+        
+        } catch (Exception e) {
+        
+            e.printStackTrace();
+        }
 
         clearForm();
     }
@@ -455,16 +489,56 @@ public class RegistrationFormCRUD extends JFrame {
     public void updateRecord() {
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Select Row First");
+    
+            JOptionPane.showMessageDialog(this,
+                    "Select Row First");
+    
             return;
         }
-
-        model.setValueAt(txtName.getText(), selectedRow, 0);
-        model.setValueAt(txtEmail.getText(), selectedRow, 1);
-        model.setValueAt(txtPhone.getText(), selectedRow, 2);
-
+    
+        int id = Integer.parseInt(
+                model.getValueAt(selectedRow, 0).toString()
+        );
+    
+        String name =
+                capitalizeWords(txtName.getText().trim());
+    
+        String email = txtEmail.getText().trim();
+    
+        String phone = txtPhone.getText().trim();
+    
+        // ===== NAME VALIDATION =====
+        if (!name.matches("[a-zA-Z ]+")) {
+    
+            JOptionPane.showMessageDialog(this,
+                    "Name should contain only alphabets");
+    
+            return;
+        }
+    
+        // ===== EMAIL VALIDATION =====
+        String emailRegex =
+                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+    
+        if (!email.matches(emailRegex)) {
+    
+            JOptionPane.showMessageDialog(this,
+                    "Invalid Email Address");
+    
+            return;
+        }
+    
+        // ===== MOBILE VALIDATION =====
+        if (!phone.matches("[0-9]{10}")) {
+    
+            JOptionPane.showMessageDialog(this,
+                    "Mobile Number must contain exactly 10 digits");
+    
+            return;
+        }
+    
         String gender = "";
-
+    
         if (male.isSelected()) {
             gender = "Male";
         } else if (female.isSelected()) {
@@ -472,55 +546,107 @@ public class RegistrationFormCRUD extends JFrame {
         } else {
             gender = "Other";
         }
-
-        model.setValueAt(gender, selectedRow, 3);
-
+    
         String skills = "";
-
+    
         if (java.isSelected()) {
             skills += "Java ";
         }
-
+    
         if (python.isSelected()) {
             skills += "Python ";
         }
-
+    
         if (webDev.isSelected()) {
-            skills += "Web Dev ";
+            skills += "Web Development ";
         }
-
+    
         if (ai.isSelected()) {
-            skills += "AI/ML ";
+            skills += "AI / ML ";
         }
-
-        model.setValueAt(skills, selectedRow, 4);
-
-        model.setValueAt(countryBox.getSelectedItem(), selectedRow, 5);
-
-        model.setValueAt(ageSpinner.getValue(), selectedRow, 6);
-
-        model.setValueAt(txtAddress.getText(), selectedRow, 7);
-
-        model.setValueAt(bioArea.getText(), selectedRow, 8);
-
-        JOptionPane.showMessageDialog(this, "Record Updated Successfully");
-
-        clearForm();
+    
+        String country =
+                countryBox.getSelectedItem().toString();
+    
+        int age = (Integer) ageSpinner.getValue();
+    
+        String address = txtAddress.getText();
+    
+        String bio = bioArea.getText();
+    
+        try {
+    
+            String query =
+                    "UPDATE students SET " +
+                    "name=?, email=?, password=?, phone=?, gender=?, " +
+                    "skills=?, country=?, age=?, address=?, bio=? " +
+                    "WHERE id=?";
+    
+            pst = con.prepareStatement(query);
+    
+            pst.setString(1, name);
+            pst.setString(2, email);
+            pst.setString(3,
+                    String.valueOf(txtPassword.getPassword()));
+            pst.setString(4, phone);
+            pst.setString(5, gender);
+            pst.setString(6, skills);
+            pst.setString(7, country);
+            pst.setInt(8, age);
+            pst.setString(9, address);
+            pst.setString(10, bio);
+    
+            pst.setInt(11, id);
+    
+            pst.executeUpdate();
+    
+            JOptionPane.showMessageDialog(this,
+                    "Record Updated Successfully");
+    
+            loadTable();
+    
+            clearForm();
+    
+        } catch (Exception e) {
+    
+            e.printStackTrace();
+        }
     }
-
     // ===== DELETE RECORD =====
     public void deleteRecord() {
 
         if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Select Row First");
+            JOptionPane.showMessageDialog(this, 
+            "Select Row First");
             return;
         }
 
-        model.removeRow(selectedRow);
+        int id = Integer.parseInt(
+            model.getValueAt(selectedRow, 0).toString()
+        );
 
-        JOptionPane.showMessageDialog(this, "Record Deleted Successfully");
+        try {
 
-        clearForm();
+            String query =
+                    "DELETE FROM students WHERE id=?";
+
+            pst = con.prepareStatement(query);
+
+            pst.setInt(1, id);
+
+            pst.executeUpdate();
+
+            JOptionPane.showMessageDialog(this,
+                    "Record Deleted Successfully");
+
+            loadTable();
+
+            clearForm();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
     // ===== CLEAR FORM =====
@@ -583,6 +709,79 @@ public class RegistrationFormCRUD extends JFrame {
             }
         });
     }
+
+    // ===== DATABASE CONNECTION =====
+    public void connectDB() {
+
+        try {
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/studentdb",
+                    "root",
+                "Ritesh@07"
+        );
+
+        JOptionPane.showMessageDialog(this,
+                "Database Connected Successfully");
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+}
+
+// ===== LOAD TABLE DATA =====
+public void loadTable() {
+
+    try {
+
+        pst = con.prepareStatement(
+                "SELECT * FROM students"
+        );
+
+        rs = pst.executeQuery();
+
+        model.setRowCount(0);
+
+        while (rs.next()) {
+
+            model.addRow(new Object[]{
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("gender"),
+                    rs.getString("skills"),
+                    rs.getString("country"),
+                    rs.getInt("age"),
+                    rs.getString("address"),
+                    rs.getString("bio")
+            });
+        }
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+}
+
+public String capitalizeWords(String text) {
+
+    String[] words = text.trim().split("\\s+");
+
+    String result = "";
+
+    for (String word : words) {
+
+        result += Character.toUpperCase(word.charAt(0))
+                + word.substring(1).toLowerCase()
+                + " ";
+    }
+
+    return result.trim();
+}
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
