@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -163,6 +164,11 @@ public class RegistrationFormCRUD extends JFrame {
         panel.add(webDev);
         panel.add(ai);
 
+        java.setToolTipText("Java");
+        python.setToolTipText("Python");
+        webDev.setToolTipText("Web Development");
+        ai.setToolTipText("AI / ML");
+
         // ===== Country =====
         String countries[] = {
                 "India",
@@ -209,6 +215,13 @@ public class RegistrationFormCRUD extends JFrame {
         bioScroll.setBounds(150, 550, 250, 60);
         panel.add(bioScroll);
         addPlaceholder(bioArea, "Write something about yourself");
+
+        enableDynamicTooltip(txtName);
+        enableDynamicTooltip(txtEmail);
+        enableDynamicTooltip(txtPhone);
+        enableDynamicTooltip(txtPassword);
+        enableDynamicTooltip(txtAddress);
+        enableDynamicTooltip(bioArea);
 
         // ===== Buttons =====
         addBtn = new JButton("ADD");
@@ -260,7 +273,26 @@ public class RegistrationFormCRUD extends JFrame {
 
         model = new DefaultTableModel(columns, 0);
 
-        table = new JTable(model);
+        table = new JTable(model) {
+            @Override
+            public String getToolTipText(MouseEvent e) {
+
+                java.awt.Point point = e.getPoint();
+
+                int row = rowAtPoint(point);
+                int column = columnAtPoint(point);
+
+                if (row > -1 && column > -1) {
+
+                    Object value = getValueAt(row, column);
+
+                    if (value != null) {
+                        return value.toString();
+                    }
+                }
+                return null;
+            }
+        };
 
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
@@ -279,12 +311,12 @@ public class RegistrationFormCRUD extends JFrame {
 
         // Name Column Width
         table.getColumnModel()
-            .getColumn(0)
+            .getColumn(1)
             .setPreferredWidth(180);
 
         // Phone Column Width
         table.getColumnModel()
-            .getColumn(2)
+            .getColumn(4)
             .setPreferredWidth(130);
 
         // Center Alignment for Phone
@@ -304,7 +336,7 @@ public class RegistrationFormCRUD extends JFrame {
         rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
 
         table.getColumnModel()
-            .getColumn(6)
+            .getColumn(7)
             .setCellRenderer(rightRenderer);
 
         JScrollPane tableScroll = new JScrollPane(table);
@@ -710,6 +742,18 @@ public class RegistrationFormCRUD extends JFrame {
         });
     }
 
+    public void enableDynamicTooltip(JTextComponent field) {
+
+        field.addKeyListener(new KeyAdapter() {
+    
+            @Override
+            public void keyReleased(KeyEvent e) {
+    
+                field.setToolTipText(field.getText());
+            }
+        });
+    }
+    
     // ===== DATABASE CONNECTION =====
     public void connectDB() {
 
@@ -721,16 +765,17 @@ public class RegistrationFormCRUD extends JFrame {
                     "jdbc:mysql://localhost:3306/studentdb",
                     "root",
                 "Ritesh@07"
-        );
+            );
 
-        JOptionPane.showMessageDialog(this,
+            JOptionPane.showMessageDialog(this,
                 "Database Connected Successfully");
 
-    } catch (Exception e) {
+        } catch (Exception e) {
 
-        e.printStackTrace();
+            e.printStackTrace();
+        }
     }
-}
+
 
     // ===== LOAD TABLE DATA =====
     public void loadTable() {
@@ -761,6 +806,8 @@ public class RegistrationFormCRUD extends JFrame {
                 });
             }
 
+            adjustTableColumns();
+
     
         } catch (Exception e) {
 
@@ -781,16 +828,15 @@ public class RegistrationFormCRUD extends JFrame {
 
             for (int row = 0; row < table.getRowCount(); row++) {
 
-                Object value = table.getValueAt(row, column);
+                TableCellRenderer renderer =
+                    table.getCellRenderer(row, column);
 
-                if (value != null) {
+                Component comp =
+                    table.prepareRenderer(renderer, row, column);
 
-                    int preferredWidth =
-                            value.toString().length() * 8;
-
-                    width = Math.max(width, preferredWidth);
-                }
-            }   
+                width = Math.max(width,
+                    comp.getPreferredSize().width + 20);
+            }
 
             // Minimum + Maximum Limits
             width = Math.max(width, 70);
