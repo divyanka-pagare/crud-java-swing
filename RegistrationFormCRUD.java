@@ -603,14 +603,15 @@ public class RegistrationFormCRUD extends JFrame {
 
             String query =
                     "INSERT INTO students " +
-                    "(name,email,password,phone,gender,skills,country,age,address,bio) " +
+                    "(name,email,`password`,phone,gender,skills,country,age,address,bio) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?)";
         
             pst = con.prepareStatement(query);
         
             pst.setString(1, name);
             pst.setString(2, email);
-            pst.setString(3, txtPassword.getText());
+            pst.setString(3,
+                String.valueOf(txtPassword.getPassword()));
             pst.setString(4, phone);
             pst.setString(5, gender);
             pst.setString(6, skills);
