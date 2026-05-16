@@ -338,10 +338,10 @@ public class RegistrationFormCRUD extends JFrame {
                 selectedRow = table.getSelectedRow();
 
                 txtName.setText(model.getValueAt(selectedRow, 1).toString());
-                txtEmail.setText(model.getValueAt(selectedRow, 1).toString());
-                txtPhone.setText(model.getValueAt(selectedRow, 2).toString());
+                txtEmail.setText(model.getValueAt(selectedRow, 2).toString());
+                txtPhone.setText(model.getValueAt(selectedRow, 3).toString());
 
-                String gender = model.getValueAt(selectedRow, 3).toString();
+                String gender = model.getValueAt(selectedRow, 4).toString();
 
                 if (gender.equals("Male")) {
                     male.setSelected(true);
@@ -351,22 +351,22 @@ public class RegistrationFormCRUD extends JFrame {
                     other.setSelected(true);
                 }
 
-                String skills = model.getValueAt(selectedRow, 4).toString();
+                String skills = model.getValueAt(selectedRow, 5).toString();
 
                 java.setSelected(skills.contains("Java"));
                 python.setSelected(skills.contains("Python"));
                 webDev.setSelected(skills.contains("Web Dev"));
                 ai.setSelected(skills.contains("AI/ML"));
 
-                countryBox.setSelectedItem(model.getValueAt(selectedRow, 5).toString());
+                countryBox.setSelectedItem(model.getValueAt(selectedRow, 6).toString());
 
                 ageSpinner.setValue(
-                        Integer.parseInt(model.getValueAt(selectedRow, 6).toString())
+                        Integer.parseInt(model.getValueAt(selectedRow, 7).toString())
                 );
 
-                txtAddress.setText(model.getValueAt(selectedRow, 7).toString());
+                txtAddress.setText(model.getValueAt(selectedRow, 8).toString());
 
-                bioArea.setText(model.getValueAt(selectedRow, 8).toString());
+                bioArea.setText(model.getValueAt(selectedRow, 9).toString());
             }
         });
 
@@ -732,56 +732,100 @@ public class RegistrationFormCRUD extends JFrame {
     }
 }
 
-// ===== LOAD TABLE DATA =====
-public void loadTable() {
+    // ===== LOAD TABLE DATA =====
+    public void loadTable() {
 
-    try {
+        try {
 
-        pst = con.prepareStatement(
-                "SELECT * FROM students"
-        );
+            pst = con.prepareStatement(
+                    "SELECT * FROM students"
+            );
 
-        rs = pst.executeQuery();
+            rs = pst.executeQuery();
 
-        model.setRowCount(0);
+            model.setRowCount(0);
 
-        while (rs.next()) {
+            while (rs.next()) {
 
-            model.addRow(new Object[]{
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("phone"),
-                    rs.getString("gender"),
-                    rs.getString("skills"),
-                    rs.getString("country"),
-                    rs.getInt("age"),
-                    rs.getString("address"),
-                    rs.getString("bio")
-            });
+                model.addRow(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone"),
+                        rs.getString("gender"),
+                        rs.getString("skills"),
+                        rs.getString("country"),
+                        rs.getInt("age"),
+                        rs.getString("address"),
+                        rs.getString("bio")
+                });
+            }
+
+    
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    public void adjustTableColumns() {
+
+        for (int column = 0; column < table.getColumnCount(); column++) {
+
+            // Skip Address and Bio columns
+            if (column == 8 || column == 9) {
+                continue;
+            }
+
+            int width = 50;
+
+            for (int row = 0; row < table.getRowCount(); row++) {
+
+                Object value = table.getValueAt(row, column);
+
+                if (value != null) {
+
+                    int preferredWidth =
+                            value.toString().length() * 8;
+
+                    width = Math.max(width, preferredWidth);
+                }
+            }   
+
+            // Minimum + Maximum Limits
+            width = Math.max(width, 70);
+            width = Math.min(width, 250);
+
+            table.getColumnModel()
+                    .getColumn(column)
+                    .setPreferredWidth(width);
         }
 
-    } catch (Exception e) {
+        // Fixed Width for Address & Bio
+        table.getColumnModel()
+                .getColumn(8)
+                .setPreferredWidth(250);
 
-        e.printStackTrace();
-    }
-}
-
-public String capitalizeWords(String text) {
-
-    String[] words = text.trim().split("\\s+");
-
-    String result = "";
-
-    for (String word : words) {
-
-        result += Character.toUpperCase(word.charAt(0))
-                + word.substring(1).toLowerCase()
-                + " ";
+        table.getColumnModel()
+                .getColumn(9)
+                .setPreferredWidth(250);
     }
 
-    return result.trim();
-}
+    public String capitalizeWords(String text) {
+
+        String[] words = text.trim().split("\\s+");
+
+        String result = "";
+
+        for (String word : words) {
+
+            result += Character.toUpperCase(word.charAt(0))
+                    + word.substring(1).toLowerCase()
+                    + " ";
+        }
+
+        return result.trim();
+    }
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
