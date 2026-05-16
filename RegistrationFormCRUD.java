@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.JTextComponent;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
@@ -32,17 +33,18 @@ public class RegistrationFormCRUD extends JFrame {
     public RegistrationFormCRUD() {
 
         setTitle("Registration Form - CRUD Operations");
-        setSize(1200, 700);
+        setSize(1200, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
+        panel.setBackground(new Color(245, 247, 250));
         panel.setLayout(null);
 
         // ===== Labels =====
         JLabel title = new JLabel("Student Registration Form");
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setBounds(420, 10, 400, 40);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 36));
+        title.setBounds(330, 10, 600, 50);
         panel.add(title);
 
         JLabel nameLabel = new JLabel("Full Name:");
@@ -50,66 +52,73 @@ public class RegistrationFormCRUD extends JFrame {
         panel.add(nameLabel);
 
         JLabel emailLabel = new JLabel("Email:");
-        emailLabel.setBounds(30, 110, 120, 25);
+        emailLabel.setBounds(30, 120, 120, 25);
         panel.add(emailLabel);
 
         JLabel passLabel = new JLabel("Password:");
-        passLabel.setBounds(30, 150, 120, 25);
+        passLabel.setBounds(30, 170, 120, 25);
         panel.add(passLabel);
 
         JLabel phoneLabel = new JLabel("Phone:");
-        phoneLabel.setBounds(30, 190, 120, 25);
+        phoneLabel.setBounds(30, 220, 120, 25);
         panel.add(phoneLabel);
 
         JLabel genderLabel = new JLabel("Gender:");
-        genderLabel.setBounds(30, 230, 120, 25);
+        genderLabel.setBounds(30, 270, 120, 25);
         panel.add(genderLabel);
 
         JLabel skillsLabel = new JLabel("Skills:");
-        skillsLabel.setBounds(30, 270, 120, 25);
+        skillsLabel.setBounds(30, 320, 120, 25);
         panel.add(skillsLabel);
 
         JLabel countryLabel = new JLabel("Country:");
-        countryLabel.setBounds(30, 310, 120, 25);
+        countryLabel.setBounds(30, 370, 120, 25);
         panel.add(countryLabel);
 
         JLabel ageLabel = new JLabel("Age:");
-        ageLabel.setBounds(30, 350, 120, 25);
+        ageLabel.setBounds(30, 420, 120, 25);
         panel.add(ageLabel);
 
         JLabel addressLabel = new JLabel("Address:");
-        addressLabel.setBounds(30, 390, 120, 25);
+        addressLabel.setBounds(30, 470, 120, 25);
         panel.add(addressLabel);
 
         JLabel bioLabel = new JLabel("Bio:");
-        bioLabel.setBounds(30, 460, 120, 25);
+        bioLabel.setBounds(30, 550, 120, 25);
         panel.add(bioLabel);
 
         // ===== Inputs =====
         txtName = new JTextField();
-        txtName.setBounds(150, 70, 250, 25);
+        txtName.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtName.setBounds(150, 70, 300, 35);
         panel.add(txtName);
+        addPlaceholder(txtName, "Enter full name");
 
         txtEmail = new JTextField();
-        txtEmail.setBounds(150, 110, 250, 25);
+        txtEmail.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtEmail.setBounds(150, 120, 300, 35);
         panel.add(txtEmail);
+        addPlaceholder(txtEmail, "Enter email address");
 
         txtPassword = new JPasswordField();
-        txtPassword.setBounds(150, 150, 250, 25);
+        txtPassword.setBounds(150, 170, 300, 35);
         panel.add(txtPassword);
+        addPlaceholder(txtPassword, "Enter password");
 
         txtPhone = new JTextField();
-        txtPhone.setBounds(150, 190, 250, 25);
+        txtPhone.setFont(new Font("Arial", Font.PLAIN, 14));
+        txtPhone.setBounds(150, 220, 300, 35);
         panel.add(txtPhone);
+        addPlaceholder(txtPhone, "Enter mobile number");
 
         // ===== Gender =====
         male = new JRadioButton("Male");
         female = new JRadioButton("Female");
         other = new JRadioButton("Other");
 
-        male.setBounds(150, 230, 70, 25);
-        female.setBounds(230, 230, 80, 25);
-        other.setBounds(320, 230, 80, 25);
+        male.setBounds(150, 270, 80, 25);
+        female.setBounds(250, 270, 90, 25);
+        other.setBounds(360, 270, 90, 25);
 
         genderGroup = new ButtonGroup();
         genderGroup.add(male);
@@ -123,13 +132,20 @@ public class RegistrationFormCRUD extends JFrame {
         // ===== Skills =====
         java = new JCheckBox("Java");
         python = new JCheckBox("Python");
-        webDev = new JCheckBox("Web Dev");
-        ai = new JCheckBox("AI/ML");
+        webDev = new JCheckBox("Web Development");
+        ai = new JCheckBox("AI / ML");
 
-        java.setBounds(150, 270, 80, 25);
-        python.setBounds(240, 270, 80, 25);
-        webDev.setBounds(330, 270, 100, 25);
-        ai.setBounds(440, 270, 80, 25);
+        // Set Position
+        java.setLocation(150, 320);
+        python.setLocation(220, 320);
+        webDev.setLocation(300, 320);
+        ai.setLocation(450, 320);
+
+        // Auto Size According to Text
+        java.setSize(java.getPreferredSize());
+        python.setSize(python.getPreferredSize());
+        webDev.setSize(webDev.getPreferredSize());
+        ai.setSize(ai.getPreferredSize());
 
         panel.add(java);
         panel.add(python);
@@ -146,12 +162,12 @@ public class RegistrationFormCRUD extends JFrame {
         };
 
         countryBox = new JComboBox<>(countries);
-        countryBox.setBounds(150, 310, 250, 25);
+        countryBox.setBounds(150, 370, 300, 35);
         panel.add(countryBox);
 
         // ===== Age Spinner =====
         ageSpinner = new JSpinner(new SpinnerNumberModel(18, 1, 100, 1));
-        ageSpinner.setBounds(150, 350, 250, 25);
+        ageSpinner.setBounds(150, 420, 80, 30);
         panel.add(ageSpinner);
 
         // ===== Address =====
@@ -160,16 +176,28 @@ public class RegistrationFormCRUD extends JFrame {
         txtAddress.setLineWrap(true);
         txtAddress.setWrapStyleWord(true);
 
-        JScrollPane addressScroll = new JScrollPane(txtAddress);
+        JScrollPane addressScroll = new JScrollPane(
+            txtAddress,
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+        );
 
-        addressScroll.setBounds(150, 390, 250, 25);
+        addressScroll.setBounds(150, 470, 250, 60);
         panel.add(addressScroll);
+        addPlaceholder(txtAddress, "Enter full address");
 
         // ===== Bio =====
         bioArea = new JTextArea();
+
+        bioArea.setLineWrap(true);
+        bioArea.setWrapStyleWord(true);
+
+        bioArea.setFont(new Font("Arial", Font.PLAIN, 14));
+
         JScrollPane bioScroll = new JScrollPane(bioArea);
-        bioScroll.setBounds(150, 460, 250, 80);
+        bioScroll.setBounds(150, 550, 250, 60);
         panel.add(bioScroll);
+        addPlaceholder(bioArea, "Write something about yourself");
 
         // ===== Buttons =====
         addBtn = new JButton("ADD");
@@ -177,10 +205,28 @@ public class RegistrationFormCRUD extends JFrame {
         deleteBtn = new JButton("DELETE");
         clearBtn = new JButton("CLEAR");
 
-        addBtn.setBounds(30, 580, 100, 35);
-        updateBtn.setBounds(150, 580, 100, 35);
-        deleteBtn.setBounds(270, 580, 100, 35);
-        clearBtn.setBounds(390, 580, 100, 35);
+        Font btnFont = new Font("Segoe UI", Font.BOLD, 14);
+        addBtn.setFont(btnFont);
+        updateBtn.setFont(btnFont);
+        deleteBtn.setFont(btnFont);
+        clearBtn.setFont(btnFont);
+
+        addBtn.setBackground(new Color(0, 120, 215));
+        addBtn.setForeground(Color.WHITE);
+
+        updateBtn.setBackground(new Color(40, 167, 69));
+        updateBtn.setForeground(Color.WHITE);
+
+        deleteBtn.setBackground(new Color(220, 53, 69));
+        deleteBtn.setForeground(Color.WHITE);
+
+        clearBtn.setBackground(new Color(108, 117, 125));
+        clearBtn.setForeground(Color.WHITE);
+
+        addBtn.setBounds(30, 640, 120, 40);
+        updateBtn.setBounds(170, 640, 120, 40);
+        deleteBtn.setBounds(310, 640, 120, 40);
+        clearBtn.setBounds(450, 640, 120, 40);
 
         panel.add(addBtn);
         panel.add(updateBtn);
@@ -204,8 +250,60 @@ public class RegistrationFormCRUD extends JFrame {
 
         table = new JTable(model);
 
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        table.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 14)
+        );
+
+        table.setSelectionBackground(new Color(184, 207, 229));
+
+        table.setGridColor(Color.LIGHT_GRAY);
+
+        // ===== TABLE SETTINGS =====
+        table.setRowHeight(35);
+
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        // Name Column Width
+        table.getColumnModel()
+            .getColumn(0)
+            .setPreferredWidth(180);
+
+        // Phone Column Width
+        table.getColumnModel()
+            .getColumn(2)
+            .setPreferredWidth(130);
+
+        // Center Alignment for Phone
+        DefaultTableCellRenderer centerRenderer =
+        new DefaultTableCellRenderer();
+
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+        table.getColumnModel()
+            .getColumn(2)
+            .setCellRenderer(centerRenderer);
+
+        // Right Alignment for Age
+        DefaultTableCellRenderer rightRenderer =
+            new DefaultTableCellRenderer();
+
+        rightRenderer.setHorizontalAlignment(JLabel.RIGHT);
+
+        table.getColumnModel()
+            .getColumn(6)
+            .setCellRenderer(rightRenderer);
+
         JScrollPane tableScroll = new JScrollPane(table);
+
         tableScroll.setBounds(550, 70, 600, 500);
+
+        tableScroll.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        tableScroll.setHorizontalScrollBarPolicy(
+        JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
         panel.add(tableScroll);
 
@@ -267,9 +365,38 @@ public class RegistrationFormCRUD extends JFrame {
     // ===== ADD RECORD =====
     public void addRecord() {
 
-        String name = txtName.getText();
-        String email = txtEmail.getText();
-        String phone = txtPhone.getText();
+        String name = txtName.getText().trim();
+        String email = txtEmail.getText().trim();
+        String phone = txtPhone.getText().trim();
+
+        // ===== NAME VALIDATION =====
+        if (!name.matches("[a-zA-Z ]+")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Name should contain only alphabets");
+            return;
+        }
+
+        // ===== EMAIL VALIDATION =====
+        String emailRegex =
+                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+
+        if (!email.matches(emailRegex)) {
+
+            JOptionPane.showMessageDialog(this,
+                    "Invalid Email Address");
+
+            return;
+        }
+
+        // ===== MOBILE VALIDATION =====
+        if (!phone.matches("[0-9]{10}")) {
+
+            JOptionPane.showMessageDialog(this,
+                    "Mobile Number must contain exactly 10 digits");
+
+            return;
+        }
 
         String gender = "";
 
@@ -406,6 +533,14 @@ public class RegistrationFormCRUD extends JFrame {
         txtAddress.setText("");
         bioArea.setText("");
 
+        // Restore Placeholders
+        addPlaceholder(txtName, "Enter full name");
+        addPlaceholder(txtEmail, "Enter email address");
+        addPlaceholder(txtPassword, "Enter password");
+        addPlaceholder(txtPhone, "Enter mobile number");
+        addPlaceholder(txtAddress, "Enter full address");
+        addPlaceholder(bioArea, "Write something about yourself");
+
         genderGroup.clearSelection();
 
         java.setSelected(false);
@@ -420,6 +555,34 @@ public class RegistrationFormCRUD extends JFrame {
         selectedRow = -1;
     }
 
+    // ===== PLACEHOLDER METHOD =====
+    public void addPlaceholder(JTextComponent field, String placeholder) {
+
+        field.setText(placeholder);
+        field.setForeground(Color.GRAY);
+        field.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+
+                if (field.getText().equals(placeholder)) {
+
+                    field.setText("");
+                    field.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+
+                if (field.getText().isEmpty()) {
+
+                    field.setForeground(Color.GRAY);
+                    field.setText(placeholder);
+                }
+            }
+        });
+    }
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {
