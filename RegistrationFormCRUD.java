@@ -417,6 +417,76 @@ public class RegistrationFormCRUD extends JFrame {
         String email = txtEmail.getText().trim();
         String phone = txtPhone.getText().trim();
 
+        // ===== REQUIRED FIELD VALIDATION =====
+
+        if(name.isEmpty()
+                || name.equals("Enter full name")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Name is required");
+
+            return;
+        }
+
+        if(email.isEmpty()
+                || email.equals("Enter email address")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Email is required");
+
+            return;
+        }
+
+        if(String.valueOf(txtPassword.getPassword()).isEmpty()
+                || String.valueOf(txtPassword.getPassword())
+                .equals("Enter password")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Password is required");
+
+            return;
+        }
+
+        if(phone.isEmpty()
+                || phone.equals("Enter mobile number")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Phone number is required");
+
+            return;
+        }
+
+        if(!male.isSelected()
+                && !female.isSelected()
+                && !other.isSelected()) {
+
+            JOptionPane.showMessageDialog(this,
+                "Please select gender");
+
+            return;
+        }
+
+        if(!java.isSelected()
+                && !python.isSelected()
+                && !webDev.isSelected()
+                && !ai.isSelected()) {
+
+            JOptionPane.showMessageDialog(this,
+                "Please select at least one skill");
+
+            return;
+        }
+
+        if(txtAddress.getText().trim().isEmpty()
+                || txtAddress.getText()
+                .equals("Enter full address")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Address is required");
+
+            return;
+        }
+
         // ===== NAME VALIDATION =====
         if (!name.matches("[a-zA-Z ]+")) {
 
@@ -512,6 +582,25 @@ public class RegistrationFormCRUD extends JFrame {
 
         try {
 
+            // ===== DUPLICATE EMAIL CHECK =====
+
+            String checkQuery =
+                    "SELECT * FROM students WHERE email=?";
+
+            pst = con.prepareStatement(checkQuery);
+
+            pst.setString(1, email);
+
+            rs = pst.executeQuery();
+
+            if(rs.next()) {
+
+                JOptionPane.showMessageDialog(this,
+                    "Email already exists");
+
+                return;
+            }
+
             String query =
                     "INSERT INTO students " +
                     "(name,email,password,phone,gender,skills,country,age,address,bio) " +
@@ -566,6 +655,76 @@ public class RegistrationFormCRUD extends JFrame {
         String email = txtEmail.getText().trim();
     
         String phone = txtPhone.getText().trim();
+
+        // ===== REQUIRED FIELD VALIDATION =====
+
+if(name.isEmpty()
+        || name.equals("Enter full name")) {
+
+    JOptionPane.showMessageDialog(this,
+            "Name is required");
+
+    return;
+}
+
+if(email.isEmpty()
+        || email.equals("Enter email address")) {
+
+    JOptionPane.showMessageDialog(this,
+            "Email is required");
+
+    return;
+}
+
+if(String.valueOf(txtPassword.getPassword()).isEmpty()
+        || String.valueOf(txtPassword.getPassword())
+        .equals("Enter password")) {
+
+    JOptionPane.showMessageDialog(this,
+            "Password is required");
+
+    return;
+}
+
+if(phone.isEmpty()
+        || phone.equals("Enter mobile number")) {
+
+    JOptionPane.showMessageDialog(this,
+            "Phone number is required");
+
+    return;
+}
+
+if(!male.isSelected()
+        && !female.isSelected()
+        && !other.isSelected()) {
+
+    JOptionPane.showMessageDialog(this,
+            "Please select gender");
+
+    return;
+}
+
+if(!java.isSelected()
+        && !python.isSelected()
+        && !webDev.isSelected()
+        && !ai.isSelected()) {
+
+    JOptionPane.showMessageDialog(this,
+            "Please select at least one skill");
+
+    return;
+}
+
+if(txtAddress.getText().trim().isEmpty()
+        || txtAddress.getText()
+        .equals("Enter full address")) {
+
+    JOptionPane.showMessageDialog(this,
+            "Address is required");
+
+    return;
+}
     
         // ===== NAME VALIDATION =====
         if (!name.matches("[a-zA-Z ]+")) {
@@ -635,7 +794,27 @@ public class RegistrationFormCRUD extends JFrame {
         String bio = bioArea.getText();
     
         try {
-    
+
+            // ===== DUPLICATE EMAIL CHECK =====
+
+            String checkQuery =
+                "SELECT * FROM students WHERE email=? AND id!=?";
+
+            pst = con.prepareStatement(checkQuery);
+
+            pst.setString(1, email);
+            pst.setInt(2, id);
+
+            rs = pst.executeQuery();
+
+            if(rs.next()) {
+
+                JOptionPane.showMessageDialog(this,
+                "Email already exists");
+
+                return;
+            }
+
             String query =
                     "UPDATE students SET " +
                     "name=?, email=?, password=?, phone=?, gender=?, " +
