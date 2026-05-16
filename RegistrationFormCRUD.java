@@ -426,13 +426,41 @@ public class RegistrationFormCRUD extends JFrame {
         }
 
         // ===== EMAIL VALIDATION =====
-        String emailRegex =
-                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
-        if (!email.matches(emailRegex)) {
+        if(email.isEmpty()) {
+
+            JOptionPane.showMessageDialog(this,
+                "Email cannot be empty");
+
+            return;
+        }
+
+        // No spaces allowed
+        if(email.contains(" ")) {
+
+            JOptionPane.showMessageDialog(this,
+                "Email should not contain spaces");
+
+            return;
+        }
+
+        // Professional Email Regex
+        String emailRegex =
+        "^[A-Za-z][A-Za-z0-9+_.-]*@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+
+        if(!email.matches(emailRegex)) {
 
             JOptionPane.showMessageDialog(this,
                     "Invalid Email Address");
+
+            return;
+        }
+
+        // Length Validation
+        if(email.length() > 50) {
+
+            JOptionPane.showMessageDialog(this,
+                    "Email is too long");
 
             return;
         }
