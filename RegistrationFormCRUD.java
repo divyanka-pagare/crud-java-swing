@@ -1,11 +1,14 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
 
 public class RegistrationFormCRUD extends JFrame {
 
-    JTextField txtName, txtEmail, txtPhone, txtAddress, txtSearch;
+    JTextField txtName, txtEmail, txtPhone, txtSearch;
+    JTextArea txtAddress;
+
     JPasswordField txtPassword;
 
     JRadioButton male, female, other;
@@ -152,9 +155,15 @@ public class RegistrationFormCRUD extends JFrame {
         panel.add(ageSpinner);
 
         // ===== Address =====
-        txtAddress = new JTextField();
-        txtAddress.setBounds(150, 390, 250, 25);
-        panel.add(txtAddress);
+        txtAddress = new JTextArea();
+
+        txtAddress.setLineWrap(true);
+        txtAddress.setWrapStyleWord(true);
+
+        JScrollPane addressScroll = new JScrollPane(txtAddress);
+
+        addressScroll.setBounds(150, 390, 250, 25);
+        panel.add(addressScroll);
 
         // ===== Bio =====
         bioArea = new JTextArea();
