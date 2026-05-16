@@ -658,73 +658,73 @@ public class RegistrationFormCRUD extends JFrame {
 
         // ===== REQUIRED FIELD VALIDATION =====
 
-if(name.isEmpty()
-        || name.equals("Enter full name")) {
+        if(name.isEmpty()
+                || name.equals("Enter full name")) {
 
-    JOptionPane.showMessageDialog(this,
-            "Name is required");
+            JOptionPane.showMessageDialog(this,
+                "Name is required");
 
-    return;
-}
+            return;
+        }
 
-if(email.isEmpty()
-        || email.equals("Enter email address")) {
+        if(email.isEmpty()
+                || email.equals("Enter email address")) {
 
-    JOptionPane.showMessageDialog(this,
-            "Email is required");
+            JOptionPane.showMessageDialog(this,
+                    "Email is required");
 
-    return;
-}
+            return;
+        }
 
-if(String.valueOf(txtPassword.getPassword()).isEmpty()
-        || String.valueOf(txtPassword.getPassword())
-        .equals("Enter password")) {
+        if(String.valueOf(txtPassword.getPassword()).isEmpty()
+                || String.valueOf(txtPassword.getPassword())
+                .equals("Enter password")) {
 
-    JOptionPane.showMessageDialog(this,
-            "Password is required");
+            JOptionPane.showMessageDialog(this,
+                    "Password is required");
 
-    return;
-}
+            return;
+        }
 
-if(phone.isEmpty()
-        || phone.equals("Enter mobile number")) {
+        if(phone.isEmpty()
+                || phone.equals("Enter mobile number")) {
 
-    JOptionPane.showMessageDialog(this,
-            "Phone number is required");
+            JOptionPane.showMessageDialog(this,
+                    "Phone number is required");
 
-    return;
-}
+            return;
+        }
 
-if(!male.isSelected()
-        && !female.isSelected()
-        && !other.isSelected()) {
+        if(!male.isSelected()
+                && !female.isSelected()
+                && !other.isSelected()) {
 
-    JOptionPane.showMessageDialog(this,
-            "Please select gender");
+            JOptionPane.showMessageDialog(this,
+                    "Please select gender");
 
-    return;
-}
+            return;
+        }
 
-if(!java.isSelected()
-        && !python.isSelected()
-        && !webDev.isSelected()
-        && !ai.isSelected()) {
+        if(!java.isSelected()
+                && !python.isSelected()
+                && !webDev.isSelected()
+                && !ai.isSelected()) {
 
-    JOptionPane.showMessageDialog(this,
-            "Please select at least one skill");
+            JOptionPane.showMessageDialog(this,
+                    "Please select at least one skill");
 
-    return;
-}
+            return;
+        }
 
-if(txtAddress.getText().trim().isEmpty()
-        || txtAddress.getText()
-        .equals("Enter full address")) {
+        if(txtAddress.getText().trim().isEmpty()
+                || txtAddress.getText()
+                .equals("Enter full address")) {
 
-    JOptionPane.showMessageDialog(this,
-            "Address is required");
+            JOptionPane.showMessageDialog(this,
+                    "Address is required");
 
-    return;
-}
+            return;
+        }
     
         // ===== NAME VALIDATION =====
         if (!name.matches("[a-zA-Z ]+")) {
