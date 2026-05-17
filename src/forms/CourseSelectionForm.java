@@ -163,8 +163,8 @@ public class CourseSelectionForm extends JFrame {
 
         // --- Buttons ---
         enrollBtn = colorBtn("ENROLL",       new Color(0, 120, 215),  30, 575);
-        printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 170, 575);
-        clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 340, 575);
+        printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
+        clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 625);
         
         JButton billBtn = colorBtn("Download Bill (PDF)", new Color(220, 53, 69), 30, 625);
         
@@ -214,7 +214,7 @@ public class CourseSelectionForm extends JFrame {
         // (use table renderer instead)
 
         JScrollPane tableScroll = new JScrollPane(enrollmentTable);
-        tableScroll.setBounds(490, 98, 620, 570);
+        tableScroll.setBounds(490, 98, 620, 500);
         tableScroll.setVerticalScrollBarPolicy(
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         main.add(tableScroll);
@@ -223,7 +223,7 @@ public class CourseSelectionForm extends JFrame {
         JButton btnDelete = new JButton("Cancel Selected Enrollment");
         btnDelete.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnDelete.setForeground(new Color(180, 30, 30));
-        btnDelete.setBounds(490, 678, 230, 28);
+        btnDelete.setBounds(490, 620, 230, 28);
         main.add(btnDelete);
 
         add(main);
@@ -326,7 +326,7 @@ public class CourseSelectionForm extends JFrame {
         try {
             pst = con.prepareStatement(
                 "SELECT id,course_name,fees,duration " +
-                "FROM courses ORDER BY course_name");
+                "FROM courses ORDER BY id");
             rs = pst.executeQuery();
 
             while (rs.next()) {
