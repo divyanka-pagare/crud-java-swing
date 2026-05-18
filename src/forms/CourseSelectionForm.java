@@ -10,11 +10,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
-
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import javax.swing.JFileChooser;
-
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -83,6 +78,22 @@ public class CourseSelectionForm extends JFrame {
         studentDropdown.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         studentDropdown.setBounds(190, 68, 270, 32);
         main.add(studentDropdown);
+
+        studentDropdown.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+                if (value == null) {
+                    setText("-- Select Student --");
+                    setForeground(Color.GRAY);
+                }
+                return this;
+            }
+        });
+
 
         // --- Student Info Card ---
         JPanel infoCard = new JPanel(null);
@@ -267,6 +278,8 @@ public class CourseSelectionForm extends JFrame {
     // ─────────────────────────────────────────
     public void loadStudents() {
         studentDropdown.removeAllItems();
+
+        studentDropdown.addItem(null); // default empty option
         try {
             pst = con.prepareStatement(
                 "SELECT id,name,email,phone,gender,skills," +
@@ -289,8 +302,14 @@ public class CourseSelectionForm extends JFrame {
     // ─────────────────────────────────────────
     public void onStudentSelected() {
         Student s = (Student) studentDropdown.getSelectedItem();
-        if (s == null) return;
-
+        if (s == null) {
+            lblStudentEmail .setText("Email:  —");
+            lblStudentPhone .setText("Phone:  —");
+            lblStudentGender.setText("Gender: —");
+            lblAlreadyEnrolled.setText("Already enrolled: —");
+            return;
+        }
+            
         lblStudentEmail .setText("Email:  " + s.getEmail());
         lblStudentPhone .setText("Phone:  " + s.getPhone());
         lblStudentGender.setText("Gender: " + s.getGender());
@@ -421,13 +440,21 @@ public class CourseSelectionForm extends JFrame {
 
             String msg = enrolled + " course(s) enrolled successfully.";
             if (skipped > 0) msg += "\n" + skipped + " skipped (already enrolled).";
-            JOptionPane.showMessageDialog(this, msg);
 
             loadEnrollmentTable(null);
             populateFilterDropdown();
             onStudentSelected(); // refresh already-enrolled label
-            clearForm();
-            printReceipt();
+            
+            int choice = JOptionPane.showConfirmDialog(this,
+                msg + "\n\n" +
+                "Do you want to download the bill for this enrollment?",
+                "Enrollment Successful",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+            if (choice == JOptionPane.YES_OPTION) {
+                downloadBill();
+            }
 
         } catch (Exception ex) { ex.printStackTrace(); }
     }
@@ -642,7 +669,7 @@ public class CourseSelectionForm extends JFrame {
 
         try {
             pst = con.prepareStatement(
-                "SELECT c.course_name, c.fees, c.duration " +
+                "SELECT c.course_name, c.fees, c.duration, e.enrolled_at " +
                 "FROM enrollments e " +
                 "JOIN courses c ON e.course_id = c.id " +
                 "WHERE e.student_id = ?");
@@ -655,6 +682,13 @@ public class CourseSelectionForm extends JFrame {
                            .append(rs.getDouble("fees"))
                            .append("|")
                            .append(rs.getString("duration"))
+                           .append("|")
+                           .append(rs.getTimestamp("enrolled_at") != null
+                               ? rs.getTimestamp("enrolled_at")
+                                   .toLocalDateTime()
+                                   .format(java.time.format.DateTimeFormatter
+                                       .ofPattern("dd-MM-yyyy HH:mm:ss"))
+                               : "—")
                            .append("\n");
                 totalFees += rs.getDouble("fees");
                 courseCount++;
@@ -723,7 +757,12 @@ public class CourseSelectionForm extends JFrame {
             g.drawString("Student : " + s.getName(),   x, y); y += lineH;
             g.drawString("Email   : " + s.getEmail(),  x, y); y += lineH;
             g.drawString("Phone   : " + s.getPhone(),  x, y); y += lineH;
-            g.drawString("Gender  : " + s.getGender(), x, y); y += lineH + 8;
+            g.drawString("Gender  : " + s.getGender(), x, y); y += lineH;
+
+            g.drawString("Date and Time    : " + 
+                java.time.LocalDateTime.now().format(
+                    java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")),
+                x, y); y += lineH + 8;
 
             // ── Divider ──
             g.setColor(new Color(200, 200, 200));
@@ -735,8 +774,9 @@ public class CourseSelectionForm extends JFrame {
             g.setColor(Color.WHITE);
             g.setFont(new Font("Segoe UI", Font.BOLD, 11));
             g.drawString("Course Name",  x,       y);
-            g.drawString("Duration",     x + 260, y);
-            g.drawString("Fees (INR)",   x + 400, y);
+            g.drawString("Duration",     x + 200, y);
+            g.drawString("Fees (INR)",   x + 310, y);
+            g.drawString("Enrolled On",  x + 390, y);
             y += lineH;
 
             // ── Course rows ──
@@ -744,7 +784,7 @@ public class CourseSelectionForm extends JFrame {
             for (String line : courseLines.toString().split("\n")) {
                 if (line.trim().isEmpty()) continue;
                 String[] p = line.split("\\|");
-                if (p.length < 3) continue;
+                if (p.length < 4) continue;
 
                 if (alt) {
                     g.setColor(new Color(245, 248, 255));
@@ -755,9 +795,9 @@ public class CourseSelectionForm extends JFrame {
                 g.setColor(new Color(50, 50, 50));
                 g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
                 g.drawString(p[0], x,       y);
-                g.drawString(p[2], x + 260, y);
+                g.drawString(p[2], x + 200, y);
                 g.drawString(String.format("%.2f",
-                    Double.parseDouble(p[1])), x + 400, y);
+                    Double.parseDouble(p[1])), x + 310, y);
                 y += lineH;
             }
 
