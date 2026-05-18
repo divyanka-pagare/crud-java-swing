@@ -10,3 +10,7 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/75f297d7-f68e-4fa7-afd9-18712ce1ef67" />
 
+## Filter Enrollments By Student Name
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8a886686-af81-4822-b295-50d59c7a1a46" />
+
