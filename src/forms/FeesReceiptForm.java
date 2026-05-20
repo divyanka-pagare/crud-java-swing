@@ -6,6 +6,8 @@ import src.models.Student;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -333,6 +335,8 @@ public class FeesReceiptForm extends JFrame {
             }
         };
         
+        receiptTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         receiptTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         
         receiptTable.setRowHeight(32);
@@ -369,7 +373,11 @@ public class FeesReceiptForm extends JFrame {
                     .setCellRenderer(center2);
         }
 
-        JScrollPane tableScroll = new JScrollPane(receiptTable);
+        JScrollPane tableScroll = new JScrollPane(
+            receiptTable,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
+        );
         tableScroll.setBounds(500, 98, 660, 450);
         tableScroll.setVerticalScrollBarPolicy(
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -502,6 +510,8 @@ public class FeesReceiptForm extends JFrame {
             lblDiscount.setForeground(new Color(120,120,120));
         }
         lblNetFees.setText(String.format("₹ %,.2f", payable));
+
+        resizeColumnWidth(courseTable);
     }
 
     // ─────────────────────────────────────────
@@ -846,6 +856,8 @@ public class FeesReceiptForm extends JFrame {
                 });
             }
         } catch (Exception ex) { ex.printStackTrace(); }
+
+        resizeColumnWidth(receiptTable);
     }
 
     // ─────────────────────────────────────────
@@ -901,6 +913,32 @@ public class FeesReceiptForm extends JFrame {
         b.setBackground(bg); b.setForeground(Color.WHITE);
         b.setBounds(x, y, 155, 38); return b; }
 
+    private void resizeColumnWidth(JTable table) {
+
+        for (int column = 0; column < table.getColumnCount(); column++) {
+    
+            int width = 80;
+    
+            for (int row = 0; row < table.getRowCount(); row++) {
+    
+                TableCellRenderer renderer =
+                        table.getCellRenderer(row, column);
+    
+                Component comp = table.prepareRenderer(
+                        renderer, row, column);
+    
+                width = Math.max(
+                        comp.getPreferredSize().width + 20,
+                        width);
+            }
+    
+            TableColumnModel columnModel =
+                    table.getColumnModel();
+    
+            columnModel.getColumn(column)
+                    .setPreferredWidth(width);
+        }
+    }
     // ─────────────────────────────────────────
     //  WRITE PDF
     // ─────────────────────────────────────────
