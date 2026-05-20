@@ -175,18 +175,19 @@ public class CourseSelectionForm extends JFrame {
 
         // --- Buttons ---
         enrollBtn = colorBtn("ENROLL",       new Color(0, 120, 215),  30, 575);
-        printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
-        clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 625);
+        clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 575);
+        // printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
         
-        JButton ReceiptBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
-        JButton feesBtn = colorBtn("Pay Fees →", new Color(153, 0, 153), 400, 625);
+        
+        // JButton ReceiptBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
+        JButton feesBtn = colorBtn("Pay Fees →", new Color(153, 0, 153), 500, 625);
 
 
         
         main.add(enrollBtn);
-        main.add(printBtn);
+        // main.add(printBtn);
         main.add(clearBtn);
-        main.add(ReceiptBtn);
+        // main.add(ReceiptBtn);
         main.add(feesBtn);
 
         // ─────────────────────────────────────────
@@ -291,7 +292,7 @@ public class CourseSelectionForm extends JFrame {
         JButton btnDelete = new JButton("Cancel Selected Enrollment");
         btnDelete.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnDelete.setForeground(new Color(180, 30, 30));
-        btnDelete.setBounds(490, 500, 230, 28);
+        btnDelete.setBounds(500, 520, 230, 28);
         main.add(btnDelete);
 
         add(main);
@@ -311,8 +312,8 @@ public class CourseSelectionForm extends JFrame {
 
         enrollBtn.addActionListener(e -> enrollStudent());
         clearBtn .addActionListener(e -> clearForm());
-        printBtn .addActionListener(e -> printReceipt());
-        ReceiptBtn  .addActionListener(e -> downloadReceipt());
+        // printBtn .addActionListener(e -> printReceipt());
+        // ReceiptBtn  .addActionListener(e -> downloadReceipt());
         feesBtn.addActionListener(e -> new src.forms.FeesReceiptForm());
 
         btnRefresh.addActionListener(e -> {
