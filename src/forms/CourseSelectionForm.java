@@ -177,12 +177,16 @@ public class CourseSelectionForm extends JFrame {
         printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
         clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 625);
         
-        JButton billBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
+        JButton ReceiptBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
+        JButton feesBtn = colorBtn("Pay Fees →", new Color(153, 0, 153), 400, 625);
+
+
         
         main.add(enrollBtn);
         main.add(printBtn);
         main.add(clearBtn);
-        main.add(billBtn);
+        main.add(ReceiptBtn);
+        main.add(feesBtn);
 
         // ─────────────────────────────────────────
         //  RIGHT SIDE — Enrollment Table
@@ -225,7 +229,7 @@ public class CourseSelectionForm extends JFrame {
         // (use table renderer instead)
 
         JScrollPane tableScroll = new JScrollPane(enrollmentTable);
-        tableScroll.setBounds(490, 98, 620, 500);
+        tableScroll.setBounds(490, 98, 620, 400);
         tableScroll.setVerticalScrollBarPolicy(
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         main.add(tableScroll);
@@ -234,7 +238,7 @@ public class CourseSelectionForm extends JFrame {
         JButton btnDelete = new JButton("Cancel Selected Enrollment");
         btnDelete.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnDelete.setForeground(new Color(180, 30, 30));
-        btnDelete.setBounds(490, 620, 230, 28);
+        btnDelete.setBounds(490, 500, 230, 28);
         main.add(btnDelete);
 
         add(main);
@@ -255,7 +259,8 @@ public class CourseSelectionForm extends JFrame {
         enrollBtn.addActionListener(e -> enrollStudent());
         clearBtn .addActionListener(e -> clearForm());
         printBtn .addActionListener(e -> printReceipt());
-        billBtn  .addActionListener(e -> downloadBill());
+        ReceiptBtn  .addActionListener(e -> downloadReceipt());
+        feesBtn.addActionListener(e -> new src.forms.FeesReceiptForm());
 
         btnRefresh.addActionListener(e -> {
             String filter = filterDropdown.getSelectedItem().toString();
@@ -469,13 +474,13 @@ public class CourseSelectionForm extends JFrame {
     
             int choice = JOptionPane.showConfirmDialog(this,
                 msg + "\n\n" +
-                "Do you want to download the bill for this enrollment?",
+                "Do you want to download the fees receipt for this enrollment?",
                 "Enrollment Successful",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
     
             if (choice == JOptionPane.YES_OPTION) {
-                downloadBillDirect(s, enrolledCourses); // pass data directly
+                downloadReceiptDirect(s, enrolledCourses); // pass data directly
             }
     
         } catch (Exception ex) { ex.printStackTrace(); }
@@ -675,11 +680,11 @@ public class CourseSelectionForm extends JFrame {
     }
 
     
-    // ===== DOWNLOAD BILL DIRECTLY WITH PASSED DATA (called after enroll) =====
-    public void downloadBillDirect(Student s, List<Course> courses) {
+    // ===== DOWNLOAD Fees Receipt DIRECTLY WITH PASSED DATA (called after enroll) =====
+    public void downloadReceiptDirect(Student s, List<Course> courses) {
 
         if (courses == null || courses.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No courses to generate bill for.");
+            JOptionPane.showMessageDialog(this, "No courses to generate fees receipt for.");
             return;
         }
 
@@ -706,9 +711,9 @@ public class CourseSelectionForm extends JFrame {
 
         // ===== CHOOSE SAVE LOCATION =====
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Save Bill as PDF");
+        fc.setDialogTitle("Save Fees Receipt as PDF");
         fc.setSelectedFile(new java.io.File(
-            s.getName().replace(" ", "_") + "_Bill.pdf"));
+            s.getName().replace(" ", "_") + "_Fees_Receipt.pdf"));
 
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
 
@@ -743,7 +748,7 @@ public class CourseSelectionForm extends JFrame {
             g.fillRect(0, 0, 595, 65);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            g.drawString("STUDENT ENROLLMENT BILL", x, 42);
+            g.drawString("STUDENT ENROLLMENT FEES RECEIPT", x, 42);
             g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
             g.drawString("Student Management System", x, 58);
             y = 85;
@@ -836,7 +841,7 @@ public class CourseSelectionForm extends JFrame {
             fos.close();
 
             JOptionPane.showMessageDialog(this,
-                "Bill saved!\n" + pdfFile.getAbsolutePath());
+                "Fees receipt saved!\n" + pdfFile.getAbsolutePath());
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -844,8 +849,8 @@ public class CourseSelectionForm extends JFrame {
         }
     }
 
-    // ===== DOWNLOAD BILL AS PDF =====
-    public void downloadBill() {
+    // ===== DOWNLOAD FEES RECEIPT AS PDF =====
+    public void downloadReceipt() {
 
         Student s = (Student) studentDropdown.getSelectedItem();
 
@@ -936,7 +941,7 @@ public class CourseSelectionForm extends JFrame {
         JFileChooser fc = new JFileChooser();
         fc.setDialogTitle("Save Fees Receipt as PDF");
         fc.setSelectedFile(new java.io.File(
-            s.getName().replace(" ", "_") + "_Bill.pdf"));
+            s.getName().replace(" ", "_") + "_Fees_Receipt.pdf"));
 
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
 
@@ -972,7 +977,7 @@ public class CourseSelectionForm extends JFrame {
             g.fillRect(0, 0, 595, 65);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            g.drawString("STUDENT ENROLLMENT BILL", x, 42);
+            g.drawString("STUDENT ENROLLMENT FEES RECEIPT", x, 42);
             g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
             g.drawString("Student Management System", x, 58);
             y = 85;
@@ -1064,7 +1069,7 @@ public class CourseSelectionForm extends JFrame {
             fos.close();
 
             JOptionPane.showMessageDialog(this,
-                "Bill saved!\n" + pdfFile.getAbsolutePath());
+                "Fees receipt saved!\n" + pdfFile.getAbsolutePath());
 
         } catch (Exception ex) {
             ex.printStackTrace();
