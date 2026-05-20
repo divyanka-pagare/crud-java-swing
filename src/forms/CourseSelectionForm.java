@@ -177,7 +177,7 @@ public class CourseSelectionForm extends JFrame {
         printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
         clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 625);
         
-        JButton billBtn = colorBtn("Download Bill (PDF)", new Color(220, 53, 69), 30, 625);
+        JButton billBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
         
         main.add(enrollBtn);
         main.add(printBtn);
@@ -301,6 +301,17 @@ public class CourseSelectionForm extends JFrame {
     //  ON STUDENT SELECTED → update info panel
     // ─────────────────────────────────────────
     public void onStudentSelected() {
+
+        // Clear previously selected courses
+        for (JCheckBox cb : courseCheckboxes) {
+            cb.setSelected(false);
+        }
+
+        // Reset fee summary
+        lblOriginalFees.setText("₹ 0.00");
+        lblDiscount.setText("—");
+        lblTotalFees.setText("₹ 0.00");
+
         Student s = (Student) studentDropdown.getSelectedItem();
         if (s == null) {
             lblStudentEmail .setText("Email:  —");
@@ -408,57 +419,68 @@ public class CourseSelectionForm extends JFrame {
         Student s = (Student) studentDropdown.getSelectedItem();
         if (s == null) {
             JOptionPane.showMessageDialog(this, "Please select a student"); return; }
-
+    
         List<Integer> selected = new ArrayList<>();
         for (int i = 0; i < courseCheckboxes.size(); i++)
             if (courseCheckboxes.get(i).isSelected()) selected.add(i);
-
+    
         if (selected.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Please select at least one course"); return; }
-
+    
+        // ===== SAVE SELECTED COURSES BEFORE onStudentSelected() CLEARS THEM =====
+        List<Course> enrolledCourses = new ArrayList<>();
+    
         try {
             int enrolled = 0, skipped = 0;
-
+    
             for (int idx : selected) {
                 Course c = courseList.get(idx);
-
+    
                 pst = con.prepareStatement(
                     "SELECT id FROM enrollments " +
                     "WHERE student_id=? AND course_id=?");
                 pst.setInt(1, s.getId()); pst.setInt(2, c.getId());
                 rs = pst.executeQuery();
-
+    
                 if (rs.next()) { skipped++; continue; }
-
+    
                 pst = con.prepareStatement(
                     "INSERT INTO enrollments (student_id,course_id) VALUES (?,?)");
                 pst.setInt(1, s.getId()); pst.setInt(2, c.getId());
                 pst.executeUpdate();
                 enrolled++;
+                enrolledCourses.add(c); // save newly enrolled courses
             }
-
+    
+            if (enrolled == 0) {
+                JOptionPane.showMessageDialog(this,
+                    "All selected courses are already enrolled.\n" +
+                    "No new enrollment was made.");
+                return;
+            }
+    
             String msg = enrolled + " course(s) enrolled successfully.";
             if (skipped > 0) msg += "\n" + skipped + " skipped (already enrolled).";
-
+    
             loadEnrollmentTable(null);
             populateFilterDropdown();
-            onStudentSelected(); // refresh already-enrolled label
-            
+            onStudentSelected(); // this clears checkboxes — but we already saved courses above
+    
             int choice = JOptionPane.showConfirmDialog(this,
                 msg + "\n\n" +
                 "Do you want to download the bill for this enrollment?",
                 "Enrollment Successful",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
-
+    
             if (choice == JOptionPane.YES_OPTION) {
-                downloadBill();
+                downloadBillDirect(s, enrolledCourses); // pass data directly
             }
-
+    
         } catch (Exception ex) { ex.printStackTrace(); }
     }
-
+    
     // ─────────────────────────────────────────
     //  PRINT RECEIPT
     // ─────────────────────────────────────────
@@ -652,6 +674,176 @@ public class CourseSelectionForm extends JFrame {
         b.setBounds(x, y, 155, 38); return b;
     }
 
+    
+    // ===== DOWNLOAD BILL DIRECTLY WITH PASSED DATA (called after enroll) =====
+    public void downloadBillDirect(Student s, List<Course> courses) {
+
+        if (courses == null || courses.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No courses to generate bill for.");
+            return;
+        }
+
+        StringBuilder courseLines = new StringBuilder();
+        double totalFees  = 0.0;
+        int    courseCount = courses.size();
+
+        for (Course c : courses) {
+            courseLines.append(c.getCourseName())
+                    .append("|")
+                    .append(c.getFees())
+                    .append("|")
+                    .append(c.getDuration())
+                    .append("|")
+                    .append(java.time.LocalDateTime.now().format(
+                        java.time.format.DateTimeFormatter
+                            .ofPattern("dd-MM-yyyy HH:mm:ss")))
+                    .append("\n");
+            totalFees += c.getFees();
+        }
+
+        double discountAmt = courseCount >= 3 ? totalFees * 10.0 / 100.0 : 0.0;
+        double payable     = totalFees - discountAmt;
+
+        // ===== CHOOSE SAVE LOCATION =====
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle("Save Bill as PDF");
+        fc.setSelectedFile(new java.io.File(
+            s.getName().replace(" ", "_") + "_Bill.pdf"));
+
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+
+        java.io.File pdfFile = fc.getSelectedFile();
+        if (!pdfFile.getName().endsWith(".pdf"))
+            pdfFile = new java.io.File(pdfFile.getAbsolutePath() + ".pdf");
+
+        // ===== RENDER TO IMAGE =====
+        try {
+            int W = 595 * 2;
+            int H = 842 * 2;
+
+            java.awt.image.BufferedImage img =
+                new java.awt.image.BufferedImage(W, H,
+                    java.awt.image.BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D g = img.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_RENDERING,
+                            RenderingHints.VALUE_RENDER_QUALITY);
+            g.scale(2.0, 2.0);
+
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, W, H);
+
+            int x = 40, y = 40;
+            int lineH = 22;
+
+            // ── Blue header bar ──
+            g.setColor(new Color(0, 102, 204));
+            g.fillRect(0, 0, 595, 65);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Segoe UI", Font.BOLD, 22));
+            g.drawString("STUDENT ENROLLMENT BILL", x, 42);
+            g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+            g.drawString("Student Management System", x, 58);
+            y = 85;
+
+            // ── Student details ──
+            g.setColor(new Color(50, 50, 50));
+            g.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            g.drawString("Student : " + s.getName(),   x, y); y += lineH;
+            g.drawString("Email   : " + s.getEmail(),  x, y); y += lineH;
+            g.drawString("Phone   : " + s.getPhone(),  x, y); y += lineH;
+            g.drawString("Gender  : " + s.getGender(), x, y); y += lineH;
+            g.drawString("Date    : " +
+                java.time.LocalDateTime.now().format(
+                    java.time.format.DateTimeFormatter
+                        .ofPattern("dd-MM-yyyy HH:mm:ss")),
+                x, y); y += lineH + 8;
+
+            // ── Divider ──
+            g.setColor(new Color(200, 200, 200));
+            g.drawLine(x, y, 555, y); y += 14;
+
+            // ── Table header ──
+            g.setColor(new Color(0, 102, 204));
+            g.fillRect(x - 5, y - 14, 520, 22);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            g.drawString("Course Name",  x,       y);
+            g.drawString("Duration",     x + 200, y);
+            g.drawString("Fees (INR)",   x + 310, y);
+            g.drawString("Enrolled On",  x + 390, y);
+            y += lineH;
+
+            // ── Course rows ──
+            boolean alt = false;
+            for (String line : courseLines.toString().split("\n")) {
+                if (line.trim().isEmpty()) continue;
+                String[] p = line.split("\\|");
+                if (p.length < 4) continue;
+
+                if (alt) {
+                    g.setColor(new Color(245, 248, 255));
+                    g.fillRect(x - 5, y - 14, 520, 20);
+                }
+                alt = !alt;
+
+                g.setColor(new Color(50, 50, 50));
+                g.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+                g.drawString(p[0], x,       y);
+                g.drawString(p[2], x + 200, y);
+                g.drawString(String.format("%.2f",
+                    Double.parseDouble(p[1])), x + 310, y);
+                g.drawString(p[3], x + 390, y);
+                y += lineH;
+            }
+
+            // ── Divider ──
+            y += 6;
+            g.setColor(new Color(200, 200, 200));
+            g.drawLine(x, y, 555, y); y += 16;
+
+            // ── Fee summary ──
+            g.setColor(new Color(50, 50, 50));
+            g.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            g.drawString(String.format("Original Total  :  INR %.2f", totalFees),
+                        x, y); y += lineH;
+
+            if (courseCount >= 3) {
+                g.setColor(new Color(40, 167, 69));
+                g.drawString(String.format("Discount (10%%) :  - INR %.2f", discountAmt),
+                            x, y); y += lineH;
+            }
+
+            g.setColor(new Color(0, 102, 204));
+            g.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            g.drawString(String.format("Amount Payable :  INR %.2f", payable),
+                        x, y); y += lineH + 16;
+
+            // ── Footer ──
+            g.setColor(new Color(200, 200, 200));
+            g.drawLine(x, y, 555, y); y += 14;
+            g.setFont(new Font("Segoe UI", Font.ITALIC, 10));
+            g.setColor(new Color(140, 140, 140));
+            g.drawString("Thank you for enrolling. Keep learning and growing!", x, y);
+
+            g.dispose();
+
+            java.io.FileOutputStream fos =
+                new java.io.FileOutputStream(pdfFile);
+            writePDF(fos, img, W, H);
+            fos.close();
+
+            JOptionPane.showMessageDialog(this,
+                "Bill saved!\n" + pdfFile.getAbsolutePath());
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
+
     // ===== DOWNLOAD BILL AS PDF =====
     public void downloadBill() {
 
@@ -663,44 +855,78 @@ public class CourseSelectionForm extends JFrame {
             return;
         }
 
+        // ===== GET CURRENTLY SELECTED COURSES =====
+        List<String> alreadyEnrolledCourses = new ArrayList<>();
+        List<Course> selectedCourses = new ArrayList<>();
+
+        for (int i = 0; i < courseCheckboxes.size(); i++) {
+
+            if (courseCheckboxes.get(i).isSelected()) {
+
+                Course c = courseList.get(i);
+
+                try {
+                    pst = con.prepareStatement(
+                        "SELECT id FROM enrollments " +
+                        "WHERE student_id=? AND course_id=?");
+
+                    pst.setInt(1, s.getId());
+                    pst.setInt(2, c.getId());
+
+                    rs = pst.executeQuery();
+
+                    if (rs.next()) {
+                        alreadyEnrolledCourses.add(c.getCourseName());
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                selectedCourses.add(c);
+            }
+        }
+
+        // if nothing selected
+        if (selectedCourses.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "Please select at least one course");
+            return;
+        }
+
+        // Notify if already enrolled
+        if (!alreadyEnrolledCourses.isEmpty()) {
+
+            int choice = JOptionPane.showConfirmDialog(this,
+                "Student is already enrolled in:\n\n" +
+                String.join("\n", alreadyEnrolledCourses) +
+                "\n\nDo you still want to continue downloading the Fees Receipt?",
+                "Already Enrolled",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
         StringBuilder courseLines = new StringBuilder();
         double totalFees  = 0.0;
-        int    courseCount = 0;
+        int    courseCount = selectedCourses.size();
 
-        try {
-            pst = con.prepareStatement(
-                "SELECT c.course_name, c.fees, c.duration, e.enrolled_at " +
-                "FROM enrollments e " +
-                "JOIN courses c ON e.course_id = c.id " +
-                "WHERE e.student_id = ?");
-            pst.setInt(1, s.getId());
-            rs = pst.executeQuery();
+        for (Course c : selectedCourses) {
 
-            while (rs.next()) {
-                courseLines.append(rs.getString("course_name"))
-                           .append("|")
-                           .append(rs.getDouble("fees"))
-                           .append("|")
-                           .append(rs.getString("duration"))
-                           .append("|")
-                           .append(rs.getTimestamp("enrolled_at") != null
-                               ? rs.getTimestamp("enrolled_at")
-                                   .toLocalDateTime()
-                                   .format(java.time.format.DateTimeFormatter
-                                       .ofPattern("dd-MM-yyyy HH:mm:ss"))
-                               : "—")
-                           .append("\n");
-                totalFees += rs.getDouble("fees");
-                courseCount++;
-            }
-
-        } catch (Exception ex) { ex.printStackTrace(); }
-
-        if (courseCount == 0) {
-            JOptionPane.showMessageDialog(this,
-                s.getName() + " has no enrollments yet.\n" +
-                "Please enroll in courses first.");
-            return;
+            courseLines.append(c.getCourseName())
+                       .append("|")
+                       .append(c.getFees())
+                       .append("|")
+                       .append(c.getDuration())
+                       .append("|")
+                       .append(LocalDateTime.now().format(
+                           DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                       .append("\n");
+    
+            totalFees += c.getFees();
         }
 
         double discountAmt = courseCount >= 3 ? totalFees * 10.0 / 100.0 : 0.0;
@@ -708,7 +934,7 @@ public class CourseSelectionForm extends JFrame {
 
         // ===== CHOOSE SAVE LOCATION =====
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Save Bill as PDF");
+        fc.setDialogTitle("Save Fees Receipt as PDF");
         fc.setSelectedFile(new java.io.File(
             s.getName().replace(" ", "_") + "_Bill.pdf"));
 
@@ -776,7 +1002,6 @@ public class CourseSelectionForm extends JFrame {
             g.drawString("Course Name",  x,       y);
             g.drawString("Duration",     x + 200, y);
             g.drawString("Fees (INR)",   x + 310, y);
-            g.drawString("Enrolled On",  x + 390, y);
             y += lineH;
 
             // ── Course rows ──
