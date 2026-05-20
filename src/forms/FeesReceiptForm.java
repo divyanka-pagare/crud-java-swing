@@ -1,20 +1,15 @@
 package src.forms;
 
 import src.db.DBConnection;
-import src.models.Course;
 import src.models.Student;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FeesReceiptForm extends JFrame {
 
@@ -124,18 +119,68 @@ public class FeesReceiptForm extends JFrame {
         courseTableModel = new DefaultTableModel(cCols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        courseTable = new JTable(courseTableModel);
-        courseTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        courseTable.setRowHeight(26);
-        courseTable.getTableHeader()
-            .setFont(new Font("Segoe UI", Font.BOLD, 12));
-        courseTable.setGridColor(Color.LIGHT_GRAY);
-        courseTable.setSelectionBackground(new Color(184, 207, 229));
+        courseTable = new JTable(courseTableModel) {
+
+            @Override
+            public Component prepareRenderer(
+                    javax.swing.table.TableCellRenderer renderer,
+                    int row, int column) {
+
+                Component c = super.prepareRenderer(renderer, row, column);
+
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0
+                            ? Color.WHITE
+                            : new Color(245, 247, 250));
+                } else {
+                    c.setBackground(new Color(184, 207, 229));
+                }
+
+                return c;
+            }
+        };
+
+        courseTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        courseTable.setRowHeight(30);
+
+        courseTable.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 13));
+
+        courseTable.getTableHeader().setBackground(
+                new Color(0, 102, 204));
+
+        courseTable.getTableHeader().setForeground(Color.WHITE);
+
+        courseTable.setGridColor(new Color(230,230,230));
+
+        courseTable.setSelectionBackground(
+                new Color(184, 207, 229));
+
+        courseTable.setShowVerticalLines(false);
+
+        courseTable.setIntercellSpacing(new Dimension(0, 0));
+
+        ((javax.swing.table.DefaultTableCellRenderer)
+        courseTable.getTableHeader().getDefaultRenderer())
+        .setHorizontalAlignment(JLabel.CENTER);
+
+        javax.swing.table.DefaultTableCellRenderer center =
+                new javax.swing.table.DefaultTableCellRenderer();
+
+        center.setHorizontalAlignment(JLabel.CENTER);
+
+        for (int i = 0; i < courseTable.getColumnCount(); i++) {
+            courseTable.getColumnModel()
+                    .getColumn(i)
+                    .setCellRenderer(center);
+    }
 
         JScrollPane courseScroll = new JScrollPane(courseTable);
         courseScroll.setBounds(30, 230, 430, 150);
-        courseScroll.setBorder(
-            BorderFactory.createLineBorder(new Color(210,215,220)));
+        courseScroll.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220,220,220)),
+            BorderFactory.createEmptyBorder(5,5,5,5)
+        ));
         main.add(courseScroll);
 
         // --- Fee Summary ---
@@ -267,18 +312,73 @@ public class FeesReceiptForm extends JFrame {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        receiptTable = new JTable(receiptTableModel);
-        receiptTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        receiptTable.setRowHeight(28);
-        receiptTable.getTableHeader()
-            .setFont(new Font("Segoe UI", Font.BOLD, 12));
-        receiptTable.setSelectionBackground(new Color(184, 207, 229));
-        receiptTable.setGridColor(Color.LIGHT_GRAY);
+        receiptTable = new JTable(receiptTableModel) {
+
+            @Override
+            public Component prepareRenderer(
+                    javax.swing.table.TableCellRenderer renderer,
+                    int row, int column) {
+        
+                Component c = super.prepareRenderer(renderer, row, column);
+        
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0
+                            ? Color.WHITE
+                            : new Color(245, 247, 250));
+                } else {
+                    c.setBackground(new Color(184, 207, 229));
+                }
+        
+                return c;
+            }
+        };
+        
+        receiptTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        
+        receiptTable.setRowHeight(32);
+        
+        receiptTable.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 13));
+        
+        receiptTable.getTableHeader().setBackground(
+                new Color(0, 102, 204));
+        
+        receiptTable.getTableHeader().setForeground(Color.WHITE);
+        
+        receiptTable.setGridColor(new Color(230,230,230));
+        
+        receiptTable.setSelectionBackground(
+                new Color(184, 207, 229));
+        
+        receiptTable.setShowVerticalLines(false);
+        
+        receiptTable.setIntercellSpacing(new Dimension(0, 0));
+        
+        ((javax.swing.table.DefaultTableCellRenderer)
+        receiptTable.getTableHeader().getDefaultRenderer())
+        .setHorizontalAlignment(JLabel.CENTER);
+        
+        javax.swing.table.DefaultTableCellRenderer center2 =
+                new javax.swing.table.DefaultTableCellRenderer();
+        
+        center2.setHorizontalAlignment(JLabel.CENTER);
+        
+        for (int i = 0; i < receiptTable.getColumnCount(); i++) {
+            receiptTable.getColumnModel()
+                    .getColumn(i)
+                    .setCellRenderer(center2);
+        }
 
         JScrollPane tableScroll = new JScrollPane(receiptTable);
         tableScroll.setBounds(500, 98, 660, 450);
         tableScroll.setVerticalScrollBarPolicy(
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        tableScroll.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220,220,220)),
+            BorderFactory.createEmptyBorder(5,5,5,5)
+        ));
+
         main.add(tableScroll);
 
         add(main);
