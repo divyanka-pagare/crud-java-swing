@@ -7,6 +7,8 @@ import src.models.Student;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.print.*;
@@ -216,22 +218,74 @@ public class CourseSelectionForm extends JFrame {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        enrollmentTable = new JTable(tableModel);
-        enrollmentTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        enrollmentTable.setRowHeight(30);
+        enrollmentTable = new JTable(tableModel) {
+
+            @Override
+            public String getToolTipText(MouseEvent e) {
+        
+                int row = rowAtPoint(e.getPoint());
+                int col = columnAtPoint(e.getPoint());
+        
+                if (row > -1 && col > -1) {
+        
+                    Object value = getValueAt(row, col);
+        
+                    return value != null ? value.toString() : null;
+                }
+        
+                return null;
+            }
+        };
+        
+        enrollmentTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
         enrollmentTable.getTableHeader()
-            .setFont(new Font("Segoe UI", Font.BOLD, 13));
-        enrollmentTable.setSelectionBackground(new Color(184, 207, 229));
+                .setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        enrollmentTable.setRowHeight(35);
+        
+        enrollmentTable.setSelectionBackground(
+                new Color(184, 207, 229));
+        
         enrollmentTable.setGridColor(Color.LIGHT_GRAY);
-
-        // right-align fees column
-        DefaultListCellRenderer rightR = new DefaultListCellRenderer();
-        // (use table renderer instead)
-
+        
+        enrollmentTable.setAutoResizeMode(
+                JTable.AUTO_RESIZE_OFF);
+        
+        // ===== COLUMN ALIGNMENTS =====
+        
+        // Center align fees
+        DefaultTableCellRenderer centerRenderer =
+                new DefaultTableCellRenderer();
+        
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        
+        enrollmentTable.getColumnModel()
+                .getColumn(3)
+                .setCellRenderer(centerRenderer);
+        
+        // Center align duration
+        DefaultTableCellRenderer durationRenderer =
+                new DefaultTableCellRenderer();
+        
+        durationRenderer.setHorizontalAlignment(JLabel.CENTER);
+        
+        enrollmentTable.getColumnModel()
+                .getColumn(4)
+                .setCellRenderer(durationRenderer);
+        
+        // ===== SCROLL PANE =====
+        
         JScrollPane tableScroll = new JScrollPane(enrollmentTable);
+        
         tableScroll.setBounds(490, 98, 620, 400);
+        
         tableScroll.setVerticalScrollBarPolicy(
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        tableScroll.setHorizontalScrollBarPolicy(
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        
         main.add(tableScroll);
 
         // Delete selected enrollment button
@@ -613,18 +667,71 @@ public class CourseSelectionForm extends JFrame {
                 Timestamp ts = rs.getTimestamp("enrolled_at");
                 String date  = ts != null
                     ? ts.toLocalDateTime().format(
-                        DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
+                        DateTimeFormatter.ofPattern(
+                            "dd-MM-yyyy HH:mm"))
                     : "—";
                 tableModel.addRow(new Object[]{
                     rs.getInt("e.id"),
                     rs.getString("s.name"),
                     rs.getString("c.course_name"),
-                    String.format("₹ %,.2f", rs.getDouble("c.fees")),
+                    String.format("₹ %,.2f", 
+                        rs.getDouble("c.fees")),
                     rs.getString("c.duration"),
                     date
                 });
             }
+
+            adjustEnrollmentTableColumns();
+
         } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    // ===== DYNAMIC TABLE COLUMN SIZE =====
+    public void adjustEnrollmentTableColumns() {
+
+        for (int col = 0;
+            col < enrollmentTable.getColumnCount();
+            col++) {
+
+            int width = 80;
+
+            for (int row = 0;
+                row < enrollmentTable.getRowCount();
+                row++) {
+
+                TableCellRenderer renderer =
+                        enrollmentTable.getCellRenderer(row, col);
+
+                Component comp =
+                        enrollmentTable.prepareRenderer(
+                                renderer, row, col);
+
+                width = Math.max(
+                        width,
+                        comp.getPreferredSize().width + 20
+                );
+            }
+
+            width = Math.max(80, Math.min(width, 300));
+
+            enrollmentTable.getColumnModel()
+                    .getColumn(col)
+                    .setPreferredWidth(width);
+        }
+
+        // custom larger columns
+
+        enrollmentTable.getColumnModel()
+                .getColumn(1)
+                .setPreferredWidth(180);
+
+        enrollmentTable.getColumnModel()
+                .getColumn(2)
+                .setPreferredWidth(220);
+
+        enrollmentTable.getColumnModel()
+                .getColumn(5)
+                .setPreferredWidth(180);
     }
 
     // ─────────────────────────────────────────
