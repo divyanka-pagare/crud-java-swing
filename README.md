@@ -8,7 +8,7 @@
 
 ## Course Selection Form 
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/75f297d7-f68e-4fa7-afd9-18712ce1ef67" />
+
 
 ## Filter Enrollments By Student Name
 
@@ -16,4 +16,4 @@
 
 ## Download Fees Receipt - PDF Format 
 
-<img width="620" height="870" alt="image" src="https://github.com/user-attachments/assets/b6c68712-85fd-4b04-800e-55dfbf9c0c53" />
+
