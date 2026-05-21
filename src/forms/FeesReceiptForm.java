@@ -267,8 +267,9 @@ public class FeesReceiptForm extends JFrame {
             txtTransactionId.setVisible(true);
         });
         rbOnline.addActionListener(e -> {
-            lblTransactionId.setVisible(true);
-            txtTransactionId.setVisible(true);
+            lblTransactionId.setVisible(false);
+            txtTransactionId.setVisible(false);
+            txtTransactionId.setText("");
         });
         rbCash  .addActionListener(e -> {
             lblTransactionId.setVisible(false);
@@ -536,10 +537,10 @@ public class FeesReceiptForm extends JFrame {
         String mode = rbCash.isSelected() ? "Cash" :
                       rbCard.isSelected() ? "Card" : "Online";
 
-        if ((rbCard.isSelected() || rbOnline.isSelected())
+        if (rbCard.isSelected()
                 && txtTransactionId.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                "Please enter the Transaction ID for " + mode + " payment"); return; }
+                "Please enter the Transaction ID for Card payment"); return; }
 
         // ===== CHECK ALREADY PAID =====
         try {
@@ -586,18 +587,16 @@ public class FeesReceiptForm extends JFrame {
         if (confirm != JOptionPane.YES_OPTION) return;
 
         // ===== SAVE TO DB =====
+        // ===== ONLINE → open UPI screen =====
+        if (rbOnline.isSelected()) {
+            new UpiPaymentScreen(this, s, total, disc,
+                payable, count);
+            return;
+        }
+
+        // ===== CASH / CARD → save directly =====
         try {
-            pst = con.prepareStatement(
-                "INSERT INTO fee_payments " +
-                "(student_id, total_fees, discount_amt, amount_paid, " +
-                "payment_mode, payment_status) " +
-                "VALUES (?,?,?,?,?,'Paid')");
-            pst.setInt(1, s.getId());
-            pst.setDouble(2, total);
-            pst.setDouble(3, disc);
-            pst.setDouble(4, payable);
-            pst.setString(5, mode);
-            pst.executeUpdate();
+            savePaymentToDB(s, total, disc, payable, mode, count);
 
             loadReceiptTable(null);
             populateFilterDropdown();
@@ -616,7 +615,6 @@ public class FeesReceiptForm extends JFrame {
 
         } catch (Exception ex) { ex.printStackTrace(); }
     }
-
     // ─────────────────────────────────────────
     //  DOWNLOAD RECEIPT BUTTON
     // ─────────────────────────────────────────
@@ -889,6 +887,23 @@ public class FeesReceiptForm extends JFrame {
         lblCourseFees.setText("₹ 0.00");
         lblDiscount  .setText("—");
         lblNetFees   .setText("₹ 0.00");
+    }
+
+    public void savePaymentToDB(Student s, double total,
+            double disc, double payable, String mode, int count) {
+        try {
+            pst = con.prepareStatement(
+                "INSERT INTO fee_payments " +
+                "(student_id, total_fees, discount_amt, amount_paid, " +
+                "payment_mode, payment_status) " +
+                "VALUES (?,?,?,?,?,'Paid')");
+            pst.setInt(1, s.getId());
+            pst.setDouble(2, total);
+            pst.setDouble(3, disc);
+            pst.setDouble(4, payable);
+            pst.setString(5, mode);
+            pst.executeUpdate();
+        } catch (Exception ex) { ex.printStackTrace(); }
     }
 
     // ─────────────────────────────────────────

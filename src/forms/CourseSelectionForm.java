@@ -528,13 +528,26 @@ public class CourseSelectionForm extends JFrame {
     
             int choice = JOptionPane.showConfirmDialog(this,
                 msg + "\n\n" +
-                "Do you want to download the fees receipt for this enrollment?",
+                "Do you want to pay fees now?",
                 "Enrollment Successful",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
-    
+
             if (choice == JOptionPane.YES_OPTION) {
-                downloadReceiptDirect(s, enrolledCourses); // pass data directly
+                // open Fees Receipt Form directly for this student
+                FeesReceiptForm feesForm = new FeesReceiptForm();
+
+                // auto-select the same student in fees form
+                for (int i = 0; i < feesForm.studentDropdown.getItemCount(); i++) {
+                    Object item = feesForm.studentDropdown.getItemAt(i);
+                    if (item instanceof src.models.Student) {
+                        src.models.Student st = (src.models.Student) item;
+                        if (st.getId() == s.getId()) {
+                            feesForm.studentDropdown.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
             }
     
         } catch (Exception ex) { ex.printStackTrace(); }
