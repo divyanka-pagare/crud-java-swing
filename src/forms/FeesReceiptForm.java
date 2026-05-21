@@ -13,8 +13,12 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class FeesReceiptForm extends JFrame {
 
+   
     // ===== LEFT PANEL =====
     JComboBox<Student> studentDropdown;
     JLabel lblEmail, lblPhone, lblGender;
@@ -44,7 +48,16 @@ public class FeesReceiptForm extends JFrame {
     static final int    DISCOUNT_THRESHOLD = 3;
     static final double DISCOUNT_PERCENT   = 10.0;
 
+    List<Integer> filteredCourseIds = null; // null means show all
+
+    // called from Main menu — shows all unpaid courses
     public FeesReceiptForm() {
+        this(null);
+    }
+
+    // called from CourseSelectionForm — shows only selected new courses
+    public FeesReceiptForm(List<Integer> courseIds) {
+        this.filteredCourseIds = courseIds;
 
         setTitle("Fees Receipt");
         setSize(1200, 750);
@@ -472,12 +485,48 @@ public class FeesReceiptForm extends JFrame {
         int    count = 0;
 
         try {
-            pst = con.prepareStatement(
-                "SELECT c.course_name, c.duration, c.fees " +
-                "FROM enrollments e " +
-                "JOIN courses c ON e.course_id = c.id " +
-                "WHERE e.student_id = ?");
-            pst.setInt(1, s.getId());
+            // ===== BUILD QUERY BASED ON FILTER =====
+            String query;
+
+            if (filteredCourseIds != null && !filteredCourseIds.isEmpty()) {
+
+                // show only the newly selected courses
+                StringBuilder inClause = new StringBuilder();
+                for (int i = 0; i < filteredCourseIds.size(); i++) {
+                    inClause.append(i == 0 ? "?" : ",?");
+                }
+
+                query = "SELECT c.course_name, c.duration, c.fees " +
+                        "FROM enrollments e " +
+                        "JOIN courses c ON e.course_id = c.id " +
+                        "WHERE e.student_id = ? " +
+                        "AND c.id IN (" + inClause + ")";
+
+                pst = con.prepareStatement(query);
+                pst.setInt(1, s.getId());
+
+                for (int i = 0; i < filteredCourseIds.size(); i++) {
+                    pst.setInt(i + 2, filteredCourseIds.get(i));
+                }
+
+            } else {
+
+                // show all unpaid courses
+                // (exclude courses already paid in fee_payments)
+                query = "SELECT c.course_name, c.duration, c.fees " +
+                        "FROM enrollments e " +
+                        "JOIN courses c ON e.course_id = c.id " +
+                        "WHERE e.student_id = ? " +
+                        "AND c.id NOT IN (" +
+                        "  SELECT fp2.course_id FROM fee_payment_courses fp2 " +
+                        "  WHERE fp2.student_id = ?" +
+                        ")";
+
+                pst = con.prepareStatement(query);
+                pst.setInt(1, s.getId());
+                pst.setInt(2, s.getId());
+            }
+
             rs = pst.executeQuery();
 
             while (rs.next()) {
@@ -490,6 +539,7 @@ public class FeesReceiptForm extends JFrame {
                 total += fee;
                 count++;
             }
+
         } catch (Exception ex) { ex.printStackTrace(); }
 
         if (count == 0) {
@@ -896,13 +946,54 @@ public class FeesReceiptForm extends JFrame {
                 "INSERT INTO fee_payments " +
                 "(student_id, total_fees, discount_amt, amount_paid, " +
                 "payment_mode, payment_status) " +
-                "VALUES (?,?,?,?,?,'Paid')");
+                "VALUES (?,?,?,?,?,'Paid')",
+                PreparedStatement.RETURN_GENERATED_KEYS
+            );
             pst.setInt(1, s.getId());
             pst.setDouble(2, total);
             pst.setDouble(3, disc);
             pst.setDouble(4, payable);
             pst.setString(5, mode);
             pst.executeUpdate();
+
+            // get the generated payment id
+            ResultSet keys = pst.getGeneratedKeys();
+            int paymentId = -1;
+            if (keys.next()) paymentId = keys.getInt(1);
+
+            // save individual courses paid
+            if (paymentId != -1 && filteredCourseIds != null
+                    && !filteredCourseIds.isEmpty()) {
+
+                for (int courseId : filteredCourseIds) {
+                    PreparedStatement ps2 = con.prepareStatement(
+                        "INSERT INTO fee_payment_courses " +
+                        "(fee_payment_id, student_id, course_id) " +
+                        "VALUES (?,?,?)");
+                    ps2.setInt(1, paymentId);
+                    ps2.setInt(2, s.getId());
+                    ps2.setInt(3, courseId);
+                    ps2.executeUpdate();
+                }
+
+            } else if (paymentId != -1) {
+
+                // opened from Main — save all currently shown courses
+                for (int i = 0; i < courseTableModel.getRowCount(); i++) {
+                    String courseName =
+                        courseTableModel.getValueAt(i, 0).toString();
+                    PreparedStatement ps2 = con.prepareStatement(
+                        "INSERT INTO fee_payment_courses " +
+                        "(fee_payment_id, student_id, course_id) " +
+                        "SELECT ?, s.id, c.id FROM students s, courses c " +
+                        "WHERE s.id=? AND c.course_name=?");
+                    ps2.setInt(1, paymentId);
+                    ps2.setInt(2, s.getId());
+                    ps2.setString(3, courseName);
+                    ps2.executeUpdate();
+                }
+            }
+            
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 

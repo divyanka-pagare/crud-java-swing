@@ -534,8 +534,16 @@ public class CourseSelectionForm extends JFrame {
                 JOptionPane.QUESTION_MESSAGE);
 
             if (choice == JOptionPane.YES_OPTION) {
+
+                List<Integer> newCourseIds = new ArrayList<>();
+                for (int idx : selected) {
+                    Course c = courseList.get(idx);
+                    // only pass courses that were actually newly enrolled
+                    // (not skipped ones)
+                    newCourseIds.add(c.getId());
+                }
                 // open Fees Receipt Form directly for this student
-                FeesReceiptForm feesForm = new FeesReceiptForm();
+                FeesReceiptForm feesForm = new FeesReceiptForm(newCourseIds);
 
                 // auto-select the same student in fees form
                 for (int i = 0; i < feesForm.studentDropdown.getItemCount(); i++) {
