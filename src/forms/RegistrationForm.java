@@ -512,8 +512,6 @@ public class RegistrationForm extends JFrame {
     // ===== DB CONNECT =====
     public void connectDB() {
         con = DBConnection.getConnection();
-        if (con != null)
-            JOptionPane.showMessageDialog(this, "Database Connected Successfully");
     }
 
     // ===== LOAD TABLE =====

@@ -176,18 +176,12 @@ public class CourseSelectionForm extends JFrame {
         // --- Buttons ---
         enrollBtn = colorBtn("ENROLL",       new Color(0, 120, 215),  30, 575);
         clearBtn  = colorBtn("CLEAR",        new Color(108,117,125), 200, 575);
-        // printBtn  = colorBtn("PRINT RECEIPT",new Color(40, 167, 69), 200, 575);
-        
-        
-        // JButton ReceiptBtn = colorBtn("Download Fees Receipt (PDF)", new Color(220, 53, 69), 30, 625);
+        JButton backBtn = colorBtn("← Registration", new Color(52, 58, 64), 30, 625); // BACK TO REGISTRATION BUTTON
         JButton feesBtn = colorBtn("Pay Fees →", new Color(153, 0, 153), 500, 625);
 
-
-        
         main.add(enrollBtn);
-        // main.add(printBtn);
         main.add(clearBtn);
-        // main.add(ReceiptBtn);
+        main.add(backBtn);
         main.add(feesBtn);
 
         // ─────────────────────────────────────────
@@ -312,8 +306,7 @@ public class CourseSelectionForm extends JFrame {
 
         enrollBtn.addActionListener(e -> enrollStudent());
         clearBtn .addActionListener(e -> clearForm());
-        // printBtn .addActionListener(e -> printReceipt());
-        // ReceiptBtn  .addActionListener(e -> downloadReceipt());
+        backBtn.addActionListener(e -> {new src.forms.RegistrationForm();});
         feesBtn.addActionListener(e -> new src.forms.FeesReceiptForm());
 
         btnRefresh.addActionListener(e -> {
@@ -361,49 +354,82 @@ public class CourseSelectionForm extends JFrame {
     // ─────────────────────────────────────────
     public void onStudentSelected() {
 
-        // Clear previously selected courses
-        for (JCheckBox cb : courseCheckboxes) {
-            cb.setSelected(false);
-        }
+        Student s = (Student) studentDropdown.getSelectedItem();
 
-        // Reset fee summary
+        // reset fees
         lblOriginalFees.setText("₹ 0.00");
         lblDiscount.setText("—");
         lblTotalFees.setText("₹ 0.00");
 
-        Student s = (Student) studentDropdown.getSelectedItem();
         if (s == null) {
             lblStudentEmail .setText("Email:  —");
             lblStudentPhone .setText("Phone:  —");
             lblStudentGender.setText("Gender: —");
             lblAlreadyEnrolled.setText("Already enrolled: —");
+
+            // show all courses when no student selected
+            for (JCheckBox cb : courseCheckboxes) {
+                cb.setVisible(true);
+            }
+            coursePanel.revalidate();
+            coursePanel.repaint();
             return;
         }
-            
+
         lblStudentEmail .setText("Email:  " + s.getEmail());
         lblStudentPhone .setText("Phone:  " + s.getPhone());
         lblStudentGender.setText("Gender: " + s.getGender());
 
-        // fetch already enrolled courses
+        // ===== FETCH ALREADY ENROLLED COURSE IDs =====
+        List<Integer> enrolledCourseIds = new ArrayList<>();
+        List<String>  enrolledNames     = new ArrayList<>();
+
         try {
             pst = con.prepareStatement(
-                "SELECT c.course_name FROM enrollments e " +
-                "JOIN courses c ON e.course_id=c.id " +
-                "WHERE e.student_id=?");
+                "SELECT c.id, c.course_name " +
+                "FROM enrollments e " +
+                "JOIN courses c ON e.course_id = c.id " +
+                "WHERE e.student_id = ?");
             pst.setInt(1, s.getId());
             rs = pst.executeQuery();
-            List<String> enrolled = new ArrayList<>();
-            while (rs.next()) enrolled.add(rs.getString("course_name"));
 
-            if (enrolled.isEmpty()) {
-                lblAlreadyEnrolled.setText("Already enrolled: none");
-            } else {
-                lblAlreadyEnrolled.setText(
-                    "Already enrolled: " + String.join(", ", enrolled));
+            while (rs.next()) {
+                enrolledCourseIds.add(rs.getInt("id"));
+                enrolledNames.add(rs.getString("course_name"));
             }
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
 
+        } catch (Exception ex) { ex.printStackTrace(); }
+
+        // ===== UPDATE ALREADY ENROLLED LABEL =====
+        if (enrolledNames.isEmpty()) {
+            lblAlreadyEnrolled.setText("Already enrolled: none");
+        } else {
+            lblAlreadyEnrolled.setText(
+                "Already enrolled: " + String.join(", ", enrolledNames));
+        }
+
+        // ===== HIDE ALREADY ENROLLED COURSES, SHOW ONLY AVAILABLE =====
+        for (int i = 0; i < courseCheckboxes.size(); i++) {
+            Course    c  = courseList.get(i);
+            JCheckBox cb = courseCheckboxes.get(i);
+
+            if (enrolledCourseIds.contains(c.getId())) {
+                // already enrolled — hide this checkbox
+                cb.setSelected(false);
+                cb.setVisible(false);
+            } else {
+                // not yet enrolled — show it
+                cb.setVisible(true);
+            }
+        }
+
+        coursePanel.revalidate();
+        coursePanel.repaint();
+
+        // recalculate fees after visibility change
+        calculateFees();
+    }
+    
     // ─────────────────────────────────────────
     //  LOAD COURSE CHECKBOXES
     // ─────────────────────────────────────────

@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.List;
-import java.util.ArrayList;
-
 public class FeesReceiptForm extends JFrame {
 
    
@@ -294,7 +292,18 @@ public class FeesReceiptForm extends JFrame {
         payBtn      = colorBtn("PAY NOW",           new Color(0, 120, 215),   30, 602);
         downloadBtn = colorBtn("Download Receipt",  new Color(40, 167, 69),  200, 602);
         clearBtn    = colorBtn("CLEAR",             new Color(108,117,125),  370, 602);
+        
+        JButton backBtn = colorBtn("← Course Selection", new Color(52, 58, 64), 30, 655);
+        // ===== CANCEL SELECTED ENROLLMENT BUTTON =====
+        JButton cancelEnrollBtn = new JButton("Cancel Selected Enrollment");
+        cancelEnrollBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cancelEnrollBtn.setForeground(new Color(180, 30, 30));
+        cancelEnrollBtn.setBounds(500, 550, 230, 28);
+        
+        
+        main.add(cancelEnrollBtn);
 
+        main.add(backBtn);
         main.add(payBtn);
         main.add(downloadBtn);
         main.add(clearBtn);
@@ -321,7 +330,7 @@ public class FeesReceiptForm extends JFrame {
         main.add(btnRefresh);
 
         String[] rCols = {
-            "ID", "Student", "Total Fees", "Discount",
+            "ID", "Student", "Courses Paid", "Total Fees", "Discount",
             "Amount Paid", "Mode", "Status", "Paid On"
         };
         receiptTableModel = new DefaultTableModel(rCols, 0) {
@@ -419,6 +428,9 @@ public class FeesReceiptForm extends JFrame {
         payBtn     .addActionListener(e -> payFees());
         downloadBtn.addActionListener(e -> downloadReceipt());
         clearBtn   .addActionListener(e -> clearForm());
+        backBtn.addActionListener(e -> {new src.forms.CourseSelectionForm(); dispose();});
+
+        cancelEnrollBtn.addActionListener(e -> cancelEnrollment());
 
         btnRefresh.addActionListener(e -> {
             if (filterDropdown.getSelectedItem() == null) return;
@@ -485,49 +497,48 @@ public class FeesReceiptForm extends JFrame {
         int    count = 0;
 
         try {
-            // ===== BUILD QUERY BASED ON FILTER =====
-            String query;
+            PreparedStatement ps;
 
             if (filteredCourseIds != null && !filteredCourseIds.isEmpty()) {
 
-                // show only the newly selected courses
+                // ===== SHOW ONLY FILTERED COURSES (from CourseSelectionForm) =====
                 StringBuilder inClause = new StringBuilder();
                 for (int i = 0; i < filteredCourseIds.size(); i++) {
                     inClause.append(i == 0 ? "?" : ",?");
                 }
 
-                query = "SELECT c.course_name, c.duration, c.fees " +
-                        "FROM enrollments e " +
-                        "JOIN courses c ON e.course_id = c.id " +
-                        "WHERE e.student_id = ? " +
-                        "AND c.id IN (" + inClause + ")";
+                ps = con.prepareStatement(
+                    "SELECT c.course_name, c.duration, c.fees " +
+                    "FROM enrollments e " +
+                    "JOIN courses c ON e.course_id = c.id " +
+                    "WHERE e.student_id = ? " +
+                    "AND c.id IN (" + inClause + ")");
 
-                pst = con.prepareStatement(query);
-                pst.setInt(1, s.getId());
-
+                ps.setInt(1, s.getId());
                 for (int i = 0; i < filteredCourseIds.size(); i++) {
-                    pst.setInt(i + 2, filteredCourseIds.get(i));
+                    ps.setInt(i + 2, filteredCourseIds.get(i));
                 }
 
             } else {
 
-                // show all unpaid courses
-                // (exclude courses already paid in fee_payments)
-                query = "SELECT c.course_name, c.duration, c.fees " +
-                        "FROM enrollments e " +
-                        "JOIN courses c ON e.course_id = c.id " +
-                        "WHERE e.student_id = ? " +
-                        "AND c.id NOT IN (" +
-                        "  SELECT fp2.course_id FROM fee_payment_courses fp2 " +
-                        "  WHERE fp2.student_id = ?" +
-                        ")";
+                // ===== SHOW ONLY UNPAID COURSES =====
+                // enrolled courses minus courses already paid
+                ps = con.prepareStatement(
+                    "SELECT c.course_name, c.duration, c.fees " +
+                    "FROM enrollments e " +
+                    "JOIN courses c ON e.course_id = c.id " +
+                    "WHERE e.student_id = ? " +
+                    "AND c.id NOT IN (" +
+                    "  SELECT fpc.course_id " +
+                    "  FROM fee_payment_courses fpc " +
+                    "  WHERE fpc.student_id = ?" +
+                    ")");
 
-                pst = con.prepareStatement(query);
-                pst.setInt(1, s.getId());
-                pst.setInt(2, s.getId());
+                ps.setInt(1, s.getId());
+                ps.setInt(2, s.getId());
             }
 
-            rs = pst.executeQuery();
+            rs = ps.executeQuery();
 
             while (rs.next()) {
                 double fee = rs.getDouble("fees");
@@ -544,7 +555,7 @@ public class FeesReceiptForm extends JFrame {
 
         if (count == 0) {
             lblCourseFees.setText("₹ 0.00");
-            lblDiscount  .setText("— (no courses enrolled)");
+            lblDiscount  .setText("— (all courses paid or none enrolled)");
             lblNetFees   .setText("₹ 0.00");
             return;
         }
@@ -576,8 +587,10 @@ public class FeesReceiptForm extends JFrame {
 
         if (courseTableModel.getRowCount() == 0) {
             JOptionPane.showMessageDialog(this,
-                "This student has no enrolled courses.\n" +
-                "Please enroll in courses first."); return; }
+                "No unpaid courses found for " + s.getName() + ".\n" +
+                "Either not enrolled in any course or all courses already paid.");
+            return;
+        }
 
         if (!rbCash.isSelected() && !rbCard.isSelected()
                 && !rbOnline.isSelected()) {
@@ -592,20 +605,6 @@ public class FeesReceiptForm extends JFrame {
             JOptionPane.showMessageDialog(this,
                 "Please enter the Transaction ID for Card payment"); return; }
 
-        // ===== CHECK ALREADY PAID =====
-        try {
-            pst = con.prepareStatement(
-                "SELECT id FROM fee_payments WHERE student_id=?");
-            pst.setInt(1, s.getId());
-            rs = pst.executeQuery();
-            if (rs.next()) {
-                JOptionPane.showMessageDialog(this,
-                    s.getName() + " has already paid fees.\n" +
-                    "You can download the existing receipt.");
-                return;
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
-
         // ===== CALCULATE =====
         double total   = 0.0;
         int    count   = courseTableModel.getRowCount();
@@ -619,24 +618,26 @@ public class FeesReceiptForm extends JFrame {
         double disc    = count >= DISCOUNT_THRESHOLD ? total * DISCOUNT_PERCENT / 100.0 : 0.0;
         double payable = total - disc;
 
-        // ===== CONFIRM =====
-        int confirm = JOptionPane.showConfirmDialog(this,
-            "Student  : " + s.getName() + "\n" +
-            "Courses  : " + count + "\n" +
-            "Total    : ₹" + String.format("%,.2f", total) +
-            (disc > 0 ? "\nDiscount : - ₹" + String.format("%,.2f", disc) : "") +
-            "\nPayable  : ₹" + String.format("%,.2f", payable) +
-            "\nMode     : " + mode +
-            (txtTransactionId.isVisible() ?
-                "\nTxn ID   : " + txtTransactionId.getText().trim() : "") +
-            "\n\nConfirm payment?",
-            "Confirm Payment",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE);
+        // ===== CONFIRM (only for Cash/Card) =====
+        if (!rbOnline.isSelected()) {
 
-        if (confirm != JOptionPane.YES_OPTION) return;
+            int confirm = JOptionPane.showConfirmDialog(this,
+                "Student  : " + s.getName() + "\n" +
+                "Courses  : " + count + "\n" +
+                "Total    : ₹" + String.format("%,.2f", total) +
+                (disc > 0 ? "\nDiscount : - ₹" + String.format("%,.2f", disc) : "") +
+                "\nPayable  : ₹" + String.format("%,.2f", payable) +
+                "\nMode     : " + mode +
+                (txtTransactionId.isVisible() ?
+                    "\nTxn ID   : " + txtTransactionId.getText().trim() : "") +
+                "\n\nConfirm payment?",
+                "Confirm Payment",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
 
-        // ===== SAVE TO DB =====
+            if (confirm != JOptionPane.YES_OPTION) return;
+        }
+
         // ===== ONLINE → open UPI screen =====
         if (rbOnline.isSelected()) {
             new UpiPaymentScreen(this, s, total, disc,
@@ -871,13 +872,21 @@ public class FeesReceiptForm extends JFrame {
         receiptTableModel.setRowCount(0);
         try {
             String q =
-                "SELECT fp.id, s.name, fp.total_fees, fp.discount_amt, " +
+                "SELECT fp.id, s.name, " +
+                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
+                "fp.total_fees, fp.discount_amt, " +
                 "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
                 "FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id ";
+                "JOIN students s ON fp.student_id = s.id " +
+                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
+                "LEFT JOIN courses c ON fpc.course_id = c.id ";
+
             if (nameFilter != null && !nameFilter.isBlank())
                 q += "WHERE s.name=? ";
-            q += "ORDER BY fp.paid_at DESC";
+
+            q += "GROUP BY fp.id, s.name, fp.total_fees, fp.discount_amt, " +
+                 "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
+                 "ORDER BY fp.paid_at DESC";
 
             pst = con.prepareStatement(q);
             if (nameFilter != null && !nameFilter.isBlank())
@@ -890,9 +899,14 @@ public class FeesReceiptForm extends JFrame {
                     ? ts.toLocalDateTime().format(
                         DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
                     : "—";
+
+                String courses = rs.getString("courses");
+                if (courses == null) courses = "—";
+
                 receiptTableModel.addRow(new Object[]{
                     rs.getInt("fp.id"),
                     rs.getString("s.name"),
+                    courses,                          // courses column
                     String.format("₹ %,.2f", rs.getDouble("total_fees")),
                     rs.getDouble("discount_amt") > 0
                         ? String.format("- ₹ %,.2f", rs.getDouble("discount_amt"))
@@ -924,6 +938,66 @@ public class FeesReceiptForm extends JFrame {
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
+    // ─────────────────────────────────────────
+    //  CANCEL ENROLLMENT
+    // ─────────────────────────────────────────
+    public void cancelEnrollment() {
+
+        int row = receiptTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this,
+                "Please select a row from the Payment History table to cancel");
+            return;
+        }
+
+        String studentName = receiptTableModel.getValueAt(row, 1).toString();
+        String courses     = receiptTableModel.getValueAt(row, 2).toString();
+        String amountPaid  = receiptTableModel.getValueAt(row, 5).toString();
+        String mode        = receiptTableModel.getValueAt(row, 6).toString();
+        int    paymentId   = Integer.parseInt(
+                receiptTableModel.getValueAt(row, 0).toString());
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to cancel this payment record?\n\n" +
+            "Student  : " + studentName + "\n" +
+            "Courses  : " + courses     + "\n" +
+            "Amount   : " + amountPaid  + "\n" +
+            "Mode     : " + mode        + "\n\n" +
+            "This will remove the payment entry only.\n" +
+            "Enrollment records will remain unchanged.",
+            "Confirm Cancel Payment",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
+
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        try {
+            // delete course-level payment records first (foreign key)
+            pst = con.prepareStatement(
+                "DELETE FROM fee_payment_courses WHERE fee_payment_id = ?");
+            pst.setInt(1, paymentId);
+            pst.executeUpdate();
+
+            // delete main payment record
+            pst = con.prepareStatement(
+                "DELETE FROM fee_payments WHERE id = ?");
+            pst.setInt(1, paymentId);
+            pst.executeUpdate();
+
+            JOptionPane.showMessageDialog(this,
+                "Payment record cancelled successfully.\n" +
+                "Enrollment records are unchanged.");
+
+            loadReceiptTable(null);
+            populateFilterDropdown();
+            onStudentSelected();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                "Error: " + ex.getMessage());
+        }
+    }
     // ─────────────────────────────────────────
     //  CLEAR FORM
     // ─────────────────────────────────────────
@@ -993,7 +1067,7 @@ public class FeesReceiptForm extends JFrame {
                     ps2.executeUpdate();
                 }
             }
-            
+
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
@@ -1109,4 +1183,5 @@ public class FeesReceiptForm extends JFrame {
         ps.print(trailer);
         ps.flush();
     }
+
 }
