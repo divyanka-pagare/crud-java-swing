@@ -1,5 +1,12 @@
-package src.services;
+// package src.services;
 
-public class PaymentService {
-    
-}
+// public class PaymentService {
+//     savePayment()
+
+// checkAlreadyPaidCourses()
+
+// calculateDiscount()
+
+// getUnpaidCourses()
+// }
+// // 

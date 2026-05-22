@@ -5,9 +5,9 @@ import src.models.Student;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.DefaultTableCellRenderer;
+// import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
+// import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -16,6 +16,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.List;
+
+import src.utils.TableUtils;
+
 public class FeesReceiptForm extends JFrame {
 
    
@@ -183,7 +186,7 @@ public class FeesReceiptForm extends JFrame {
             }
         };
 
-        styleTable(courseTable);
+        TableUtils.styleTable(courseTable);
 
         ((javax.swing.table.DefaultTableCellRenderer)
         courseTable.getTableHeader().getDefaultRenderer())
@@ -195,7 +198,7 @@ public class FeesReceiptForm extends JFrame {
         center.setHorizontalAlignment(JLabel.CENTER);
 
         for (int i = 0; i < courseTable.getColumnCount(); i++) {
-            styleTable(courseTable);
+            TableUtils.styleTable(courseTable);
     }
 
         JScrollPane courseScroll = new JScrollPane(courseTable);
@@ -369,44 +372,10 @@ public class FeesReceiptForm extends JFrame {
                 return c;
             }
         };
-        
-        receiptTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        receiptTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        
-        receiptTable.setRowHeight(32);
-        
-        receiptTable.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 13));
-        
-        receiptTable.getTableHeader().setBackground(
-                new Color(0, 102, 204));
-        
-        receiptTable.getTableHeader().setForeground(Color.WHITE);
-        
-        receiptTable.setGridColor(new Color(230,230,230));
-        
-        receiptTable.setSelectionBackground(
-                new Color(184, 207, 229));
-        
-        receiptTable.setShowVerticalLines(false);
-        
-        receiptTable.setIntercellSpacing(new Dimension(0, 0));
-        
-        ((javax.swing.table.DefaultTableCellRenderer)
-        receiptTable.getTableHeader().getDefaultRenderer())
-        .setHorizontalAlignment(JLabel.CENTER);
-        
-        javax.swing.table.DefaultTableCellRenderer center2 =
-                new javax.swing.table.DefaultTableCellRenderer();
-        
-        center2.setHorizontalAlignment(JLabel.CENTER);
-        
-        for (int i = 0; i < receiptTable.getColumnCount(); i++) {
-            receiptTable.getColumnModel()
-                    .getColumn(i)
-                    .setCellRenderer(center2);
-        }
+
+
+
 
         JScrollPane tableScroll = new JScrollPane(
             receiptTable,
@@ -456,41 +425,7 @@ public class FeesReceiptForm extends JFrame {
             onStudentSelected();
         }
     }
-    
-    private void styleTable(JTable table) {
 
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        table.setRowHeight(30);
-
-        table.setGridColor(new Color(230, 230, 230));
-
-        table.setSelectionBackground(new Color(184, 207, 229));
-
-        table.setShowVerticalLines(false);
-
-        table.setIntercellSpacing(new Dimension(0, 0));
-
-        JTableHeader header = table.getTableHeader();
-
-        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
-
-        header.setBackground(new Color(0, 102, 204));
-
-        header.setForeground(Color.WHITE);
-
-        DefaultTableCellRenderer center =
-                new DefaultTableCellRenderer();
-
-        center.setHorizontalAlignment(JLabel.CENTER);
-
-        for (int i = 0; i < table.getColumnCount(); i++) {
-
-            table.getColumnModel()
-                    .getColumn(i)
-                    .setCellRenderer(center);
-        }
-    }
     // ─────────────────────────────────────────
     //  LOAD STUDENTS
     // ─────────────────────────────────────────
@@ -541,7 +476,7 @@ public class FeesReceiptForm extends JFrame {
     public void onStudentSelected() {
         Student s = (Student) studentDropdown.getSelectedItem();
 
-        styleTable(courseTable);
+        TableUtils.styleTable(courseTable);
         lblCourseFees.setText("₹ 0.00");
         lblDiscount  .setText("—");
         lblNetFees   .setText("₹ 0.00");
@@ -653,7 +588,7 @@ public class FeesReceiptForm extends JFrame {
         }
         lblNetFees.setText(String.format("₹ %,.2f", payable));
 
-        resizeColumnWidth(courseTable);
+        TableUtils.resizeColumnWidth(courseTable);
     }
 
     // ─────────────────────────────────────────
@@ -999,7 +934,7 @@ public class FeesReceiptForm extends JFrame {
             }
         } catch (Exception ex) { ex.printStackTrace(); }
 
-        resizeColumnWidth(receiptTable);
+        TableUtils.resizeColumnWidth(receiptTable);
     }
 
     // ─────────────────────────────────────────
