@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import src.utils.TableUtils;
+import src.utils.UIUtils;
 
 import src.services.PaymentService;
 import src.services.StudentService;
@@ -83,6 +84,35 @@ public class FeesReceiptForm extends JFrame {
         setVisible(true);
     }
 
+    public void loadStudents() {
+        
+
+        studentDropdown.removeAllItems();
+    
+        studentDropdown.addItem(null);
+    
+        try {
+    
+            StudentService studentService = new StudentService(con);
+    
+            for (Student student : studentService.getAllStudents()) {
+    
+                studentDropdown.addItem(student);
+            }
+    
+        } catch (Exception e) {
+    
+            JOptionPane.showMessageDialog(
+                this,
+                "Failed to load students.",
+                "Database Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+    
+            e.printStackTrace();
+        }
+    }
+    
     private void initializeFrame() {
 
         setTitle("Fees Receipt");
@@ -120,7 +150,7 @@ public class FeesReceiptForm extends JFrame {
         // ─────────────────────────────────────────
 
         // --- Student Dropdown ---
-        JLabel lStu = bold("Select Student:", 14);
+        JLabel lStu = UIUtils.bold("Select Student:", 14);
         lStu.setBounds(30, 65, 150, 28);
         main.add(lStu);
 
