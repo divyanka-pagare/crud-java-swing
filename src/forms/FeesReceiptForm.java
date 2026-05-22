@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import src.utils.TableUtils;
+import src.services.PaymentService;
 
 public class FeesReceiptForm extends JFrame {
 
@@ -47,6 +48,7 @@ public class FeesReceiptForm extends JFrame {
     private JPanel main;
 
     Connection        con;
+    PaymentService paymentService;
 
     static final int    DISCOUNT_THRESHOLD = 3;
     static final double DISCOUNT_PERCENT   = 10.0;
@@ -88,6 +90,7 @@ public class FeesReceiptForm extends JFrame {
         setLocationRelativeTo(null);
     
         con = DBConnection.getConnection();
+        paymentService = new PaymentService(con);
     }
 
     private void initializeMainPanel() {
@@ -335,7 +338,7 @@ public class FeesReceiptForm extends JFrame {
         };
 
         receiptTable = TableUtils.createStyledTable(receiptTableModel);
-        
+
         JScrollPane tableScroll = new JScrollPane(
             receiptTable,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -621,7 +624,16 @@ public class FeesReceiptForm extends JFrame {
 
         // ===== CASH / CARD → save directly =====
         try {
-            savePaymentToDB(s, total, disc, payable, mode, count);
+            paymentService.savePaymentToDB(
+                s, 
+                total,
+                disc, 
+                payable, 
+                mode,
+                count,
+                filteredCourseIds,
+                courseTableModel
+            );
 
             loadReceiptTable(null);
             populateFilterDropdown();
@@ -986,113 +998,7 @@ public class FeesReceiptForm extends JFrame {
         lblDiscount  .setText("—");
         lblNetFees   .setText("₹ 0.00");
     }
-
-    public void savePaymentToDB(Student s, double total,
-            double disc, double payable, String mode, int count) {
-        try {
-            PreparedStatement pst = con.prepareStatement(
-                "INSERT INTO fee_payments " +
-                "(student_id, total_fees, discount_amt, amount_paid, " +
-                "payment_mode, payment_status) " +
-                "VALUES (?,?,?,?,?,'Paid')",
-                PreparedStatement.RETURN_GENERATED_KEYS
-            );
-            pst.setInt(1, s.getId());
-            pst.setDouble(2, total);
-            pst.setDouble(3, disc);
-            pst.setDouble(4, payable);
-            pst.setString(5, mode);
-            pst.executeUpdate();
-
-            // get the generated payment id
-            ResultSet keys = pst.getGeneratedKeys();
-            int paymentId = -1;
-            if (keys.next()) paymentId = keys.getInt(1);
-
-            // save individual courses paid
-            if (paymentId != -1 && filteredCourseIds != null
-                    && !filteredCourseIds.isEmpty()) {
-
-                for (int courseId : filteredCourseIds) {
-                    PreparedStatement checkStmt = con.prepareStatement(
-                        "SELECT id FROM fee_payment_courses " +
-                        "WHERE student_id=? AND course_id=?"
-                    );
-                    
-                    checkStmt.setInt(1, s.getId());
-                    checkStmt.setInt(2, courseId);
-                    
-                    ResultSet checkRs = checkStmt.executeQuery();
-                    
-                    if (!checkRs.next()) {
-                    
-                        PreparedStatement ps2 = con.prepareStatement(
-                            "INSERT INTO fee_payment_courses " +
-                            "(fee_payment_id, student_id, course_id) " +
-                            "VALUES (?,?,?)"
-                        );
-                    
-                        ps2.setInt(1, paymentId);
-                        ps2.setInt(2, s.getId());
-                        ps2.setInt(3, courseId);
-                    
-                        ps2.executeUpdate();
-                    }
-                }
-
-            } else if (paymentId != -1) {
-
-                for (int i = 0; i < courseTableModel.getRowCount(); i++) {
-            
-                    String courseName =
-                            courseTableModel.getValueAt(i, 0).toString();
-            
-                    // first get course id
-                    PreparedStatement getCourse = con.prepareStatement(
-                        "SELECT id FROM courses WHERE course_name=?"
-                    );
-            
-                    getCourse.setString(1, courseName);
-            
-                    ResultSet crs = getCourse.executeQuery();
-            
-                    if (crs.next()) {
-            
-                        int courseId = crs.getInt("id");
-            
-                        // CHECK DUPLICATE
-                        PreparedStatement checkStmt = con.prepareStatement(
-                            "SELECT id FROM fee_payment_courses " +
-                            "WHERE student_id=? AND course_id=?"
-                        );
-            
-                        checkStmt.setInt(1, s.getId());
-                        checkStmt.setInt(2, courseId);
-            
-                        ResultSet checkRs = checkStmt.executeQuery();
-            
-                        // INSERT ONLY IF NOT PAID
-                        if (!checkRs.next()) {
-            
-                            PreparedStatement ps2 = con.prepareStatement(
-                                "INSERT INTO fee_payment_courses " +
-                                "(fee_payment_id, student_id, course_id) " +
-                                "VALUES (?,?,?)"
-                            );
-            
-                            ps2.setInt(1, paymentId);
-                            ps2.setInt(2, s.getId());
-                            ps2.setInt(3, courseId);
-            
-                            ps2.executeUpdate();
-                        }
-                    }
-                }
-            }
-
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
-
+    
     // ─────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────
