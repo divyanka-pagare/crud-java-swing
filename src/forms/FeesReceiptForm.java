@@ -18,7 +18,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import src.utils.TableUtils;
+
 import src.services.PaymentService;
+import src.services.StudentService;
 
 public class FeesReceiptForm extends JFrame {
 
@@ -48,6 +50,7 @@ public class FeesReceiptForm extends JFrame {
     private JPanel main;
 
     Connection        con;
+    StudentService studentService;
     PaymentService paymentService;
 
     static final int    DISCOUNT_THRESHOLD = 3;
@@ -90,7 +93,9 @@ public class FeesReceiptForm extends JFrame {
         setLocationRelativeTo(null);
     
         con = DBConnection.getConnection();
+        
         paymentService = new PaymentService(con);
+        studentService = new StudentService(con);
     }
 
     private void initializeMainPanel() {
@@ -998,7 +1003,7 @@ public class FeesReceiptForm extends JFrame {
         lblDiscount  .setText("—");
         lblNetFees   .setText("₹ 0.00");
     }
-    
+
     // ─────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────
