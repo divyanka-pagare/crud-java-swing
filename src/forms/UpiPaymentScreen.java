@@ -282,9 +282,16 @@ public class UpiPaymentScreen extends JFrame {
         simulateBtn.addActionListener(e -> onPaymentSuccess());
 
         downloadBtn.addActionListener(e -> {
-            parentForm.downloadReceiptForStudent(
-                student, total, disc, amountPayable,
-                mode, txnId, courseCount);
+            JOptionPane.showMessageDialog(
+                this,
+                "Payment Successful!"
+            );
+            
+            parentForm.dispose();
+            
+            new FeesReceiptForm().setVisible(true);
+            
+            dispose();
         });
 
         goBackBtn.addActionListener(e -> {
