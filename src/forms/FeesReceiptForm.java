@@ -8,8 +8,8 @@ import javax.swing.border.TitledBorder;
 // import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 // import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumnModel;
+// import javax.swing.table.TableCellRenderer;
+// import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -165,26 +165,8 @@ public class FeesReceiptForm extends JFrame {
         courseTableModel = new DefaultTableModel(cCols, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        courseTable = new JTable(courseTableModel) {
 
-            @Override
-            public Component prepareRenderer(
-                    javax.swing.table.TableCellRenderer renderer,
-                    int row, int column) {
-
-                Component c = super.prepareRenderer(renderer, row, column);
-
-                if (!isRowSelected(row)) {
-                    c.setBackground(row % 2 == 0
-                            ? Color.WHITE
-                            : new Color(245, 247, 250));
-                } else {
-                    c.setBackground(new Color(184, 207, 229));
-                }
-
-                return c;
-            }
-        };
+        courseTable = TableUtils.createStyledTable(courseTableModel);
 
         TableUtils.styleTable(courseTable);
 
@@ -352,31 +334,8 @@ public class FeesReceiptForm extends JFrame {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
-        receiptTable = new JTable(receiptTableModel) {
-
-            @Override
-            public Component prepareRenderer(
-                    javax.swing.table.TableCellRenderer renderer,
-                    int row, int column) {
+        receiptTable = TableUtils.createStyledTable(receiptTableModel);
         
-                Component c = super.prepareRenderer(renderer, row, column);
-        
-                if (!isRowSelected(row)) {
-                    c.setBackground(row % 2 == 0
-                            ? Color.WHITE
-                            : new Color(245, 247, 250));
-                } else {
-                    c.setBackground(new Color(184, 207, 229));
-                }
-        
-                return c;
-            }
-        };
-
-
-
-
-
         JScrollPane tableScroll = new JScrollPane(
             receiptTable,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -1155,33 +1114,7 @@ public class FeesReceiptForm extends JFrame {
         b.setFont(new Font("Segoe UI", Font.BOLD, 13));
         b.setBackground(bg); b.setForeground(Color.WHITE);
         b.setBounds(x, y, 155, 38); return b; }
-
-    private void resizeColumnWidth(JTable table) {
-
-        for (int column = 0; column < table.getColumnCount(); column++) {
     
-            int width = 80;
-    
-            for (int row = 0; row < table.getRowCount(); row++) {
-    
-                TableCellRenderer renderer =
-                        table.getCellRenderer(row, column);
-    
-                Component comp = table.prepareRenderer(
-                        renderer, row, column);
-    
-                width = Math.max(
-                        comp.getPreferredSize().width + 20,
-                        width);
-            }
-    
-            TableColumnModel columnModel =
-                    table.getColumnModel();
-    
-            columnModel.getColumn(column)
-                    .setPreferredWidth(width);
-        }
-    }
     // ─────────────────────────────────────────
     //  WRITE PDF
     // ─────────────────────────────────────────
