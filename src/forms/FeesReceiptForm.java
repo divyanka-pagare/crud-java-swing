@@ -93,7 +93,7 @@ public class FeesReceiptForm extends JFrame {
         setLocationRelativeTo(null);
     
         con = DBConnection.getConnection();
-        
+
         paymentService = new PaymentService(con);
         studentService = new StudentService(con);
     }
@@ -384,7 +384,7 @@ public class FeesReceiptForm extends JFrame {
     }
     
     private void loadInitialData() {
-        loadStudents();
+        studentService.loadStudents(studentDropdown);
         loadReceiptTable(null);
         populateFilterDropdown();
 
@@ -393,50 +393,7 @@ public class FeesReceiptForm extends JFrame {
         }
     }
 
-    // ─────────────────────────────────────────
-    //  LOAD STUDENTS
-    // ─────────────────────────────────────────
-    public void loadStudents() {
-        studentDropdown.removeAllItems();
-        studentDropdown.addItem(null);
-
-        String query =
-        "SELECT id, name, email, phone, gender, skills, " +
-        "country, age, address, bio " +
-        "FROM students ORDER BY name";
-
-        try (
-            PreparedStatement pst = con.prepareStatement(query);
-            ResultSet rs = pst.executeQuery()
-        ) {
-            while (rs.next()) {
-                Student student = new Student(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("phone"),
-                    rs.getString("gender"),
-                    rs.getString("skills"),
-                    rs.getString("country"),
-                    rs.getInt("age"),
-                    rs.getString("address"),
-                    rs.getString("bio")
-                );
-                studentDropdown.addItem(student);
-            }
-        } catch (Exception e) { 
-
-            JOptionPane.showMessageDialog(
-
-                this,
-                "Failed to load students.",
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE
-            );
-            e.printStackTrace(); 
-        }
-    }
-
+    
     // ─────────────────────────────────────────
     //  ON STUDENT SELECTED
     // ─────────────────────────────────────────
