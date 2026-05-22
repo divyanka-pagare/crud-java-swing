@@ -28,7 +28,7 @@ public class CourseSelectionForm extends JFrame {
     JPanel  coursePanel;
     JLabel  lblOriginalFees, lblDiscount, lblTotalFees;
 
-    JButton enrollBtn, clearBtn, printBtn;
+    JButton enrollBtn, clearBtn, printBtn, btnRefresh;
 
     // ===== RIGHT PANEL =====
     JTable            enrollmentTable;
@@ -200,7 +200,7 @@ public class CourseSelectionForm extends JFrame {
         filterDropdown.setBounds(635, 58, 220, 30);
         main.add(filterDropdown);
 
-        JButton btnRefresh = new JButton("Refresh");
+        btnRefresh = new JButton("Refresh");
         btnRefresh.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnRefresh.setBounds(870, 58, 90, 30);
         main.add(btnRefresh);
@@ -429,7 +429,7 @@ public class CourseSelectionForm extends JFrame {
         // recalculate fees after visibility change
         calculateFees();
     }
-    
+
     // ─────────────────────────────────────────
     //  LOAD COURSE CHECKBOXES
     // ─────────────────────────────────────────

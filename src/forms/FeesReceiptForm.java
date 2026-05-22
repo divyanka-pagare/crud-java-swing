@@ -5,7 +5,9 @@ import src.models.Student;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
@@ -21,7 +23,7 @@ public class FeesReceiptForm extends JFrame {
     JComboBox<Student> studentDropdown;
     JLabel lblEmail, lblPhone, lblGender;
     JLabel lblCourseFees, lblDiscount, lblNetFees;
-
+    
     JTable courseTable;
     DefaultTableModel courseTableModel;
 
@@ -31,7 +33,7 @@ public class FeesReceiptForm extends JFrame {
     JLabel  lblTransactionId;
     JTextField txtTransactionId;
 
-    JButton payBtn, clearBtn, downloadBtn;
+    JButton payBtn, clearBtn, downloadBtn, backBtn, cancelEnrollBtn, btnRefresh, b;
 
     // ===== RIGHT PANEL =====
     JTable            receiptTable;
@@ -39,9 +41,9 @@ public class FeesReceiptForm extends JFrame {
     JComboBox<String> filterDropdown;
 
     // ===== DATA =====
+    private JPanel main;
+
     Connection        con;
-    PreparedStatement pst;
-    ResultSet         rs;
 
     static final int    DISCOUNT_THRESHOLD = 3;
     static final double DISCOUNT_PERCENT   = 10.0;
@@ -57,16 +59,44 @@ public class FeesReceiptForm extends JFrame {
     public FeesReceiptForm(List<Integer> courseIds) {
         this.filteredCourseIds = courseIds;
 
+        initializeFrame();
+
+        initializeMainPanel();
+
+        initializeLeftPanel();
+
+        initializeRightPanel();
+
+        initializeListeners();
+        
+        loadInitialData();
+
+        setVisible(true);
+    }
+
+    private void initializeFrame() {
+
         setTitle("Fees Receipt");
+    
         setSize(1200, 750);
+    
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+    
         setLocationRelativeTo(null);
-
+    
         con = DBConnection.getConnection();
+    }
 
-        JPanel main = new JPanel(null);
+    private void initializeMainPanel() {
+
+        main = new JPanel(null);
+    
         main.setBackground(new Color(245, 247, 250));
-
+    
+        add(main);
+    }
+    
+    private void initializeLeftPanel() {
         // ===== TITLE =====
         JLabel title = new JLabel("Fees Receipt & Payment");
         title.setFont(new Font("Segoe UI", Font.BOLD, 28));
@@ -153,25 +183,7 @@ public class FeesReceiptForm extends JFrame {
             }
         };
 
-        courseTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseTable.setRowHeight(30);
-
-        courseTable.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 13));
-
-        courseTable.getTableHeader().setBackground(
-                new Color(0, 102, 204));
-
-        courseTable.getTableHeader().setForeground(Color.WHITE);
-
-        courseTable.setGridColor(new Color(230,230,230));
-
-        courseTable.setSelectionBackground(
-                new Color(184, 207, 229));
-
-        courseTable.setShowVerticalLines(false);
-
-        courseTable.setIntercellSpacing(new Dimension(0, 0));
+        styleTable(courseTable);
 
         ((javax.swing.table.DefaultTableCellRenderer)
         courseTable.getTableHeader().getDefaultRenderer())
@@ -183,9 +195,7 @@ public class FeesReceiptForm extends JFrame {
         center.setHorizontalAlignment(JLabel.CENTER);
 
         for (int i = 0; i < courseTable.getColumnCount(); i++) {
-            courseTable.getColumnModel()
-                    .getColumn(i)
-                    .setCellRenderer(center);
+            styleTable(courseTable);
     }
 
         JScrollPane courseScroll = new JScrollPane(courseTable);
@@ -293,9 +303,9 @@ public class FeesReceiptForm extends JFrame {
         downloadBtn = colorBtn("Download Receipt",  new Color(40, 167, 69),  200, 602);
         clearBtn    = colorBtn("CLEAR",             new Color(108,117,125),  370, 602);
         
-        JButton backBtn = colorBtn("← Course Selection", new Color(52, 58, 64), 30, 655);
+        backBtn = colorBtn("← Course Selection", new Color(52, 58, 64), 30, 655);
         // ===== CANCEL SELECTED ENROLLMENT BUTTON =====
-        JButton cancelEnrollBtn = new JButton("Cancel Selected Enrollment");
+        cancelEnrollBtn = new JButton("Cancel Selected Enrollment");
         cancelEnrollBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         cancelEnrollBtn.setForeground(new Color(180, 30, 30));
         cancelEnrollBtn.setBounds(500, 550, 230, 28);
@@ -307,7 +317,9 @@ public class FeesReceiptForm extends JFrame {
         main.add(payBtn);
         main.add(downloadBtn);
         main.add(clearBtn);
-
+    }
+    
+    private void initializeRightPanel() {
         // ─────────────────────────────────────────
         //  RIGHT SIDE — Payment History Table
         // ─────────────────────────────────────────
@@ -324,7 +336,7 @@ public class FeesReceiptForm extends JFrame {
         filterDropdown.setBounds(645, 58, 220, 30);
         main.add(filterDropdown);
 
-        JButton btnRefresh = new JButton("Refresh");
+        btnRefresh = new JButton("Refresh");
         btnRefresh.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         btnRefresh.setBounds(880, 58, 90, 30);
         main.add(btnRefresh);
@@ -411,19 +423,9 @@ public class FeesReceiptForm extends JFrame {
         ));
 
         main.add(tableScroll);
-
-        add(main);
-
-        // ===== LOAD DATA =====
-        loadStudents();
-        loadReceiptTable(null);
-        populateFilterDropdown();
-
-        if (studentDropdown.getItemCount() > 0) {
-            onStudentSelected();
-        }
-
-        // ===== LISTENERS =====
+    }
+    
+    private void initializeListeners() {
         studentDropdown.addActionListener(e -> onStudentSelected());
         payBtn     .addActionListener(e -> payFees());
         downloadBtn.addActionListener(e -> downloadReceipt());
@@ -443,31 +445,94 @@ public class FeesReceiptForm extends JFrame {
             String f = filterDropdown.getSelectedItem().toString();
             loadReceiptTable(f.equals("All Students") ? null : f);
         });
-
-        setVisible(true);
     }
+    
+    private void loadInitialData() {
+        loadStudents();
+        loadReceiptTable(null);
+        populateFilterDropdown();
 
+        if (studentDropdown.getItemCount() > 0) {
+            onStudentSelected();
+        }
+    }
+    
+    private void styleTable(JTable table) {
+
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+        table.setRowHeight(30);
+
+        table.setGridColor(new Color(230, 230, 230));
+
+        table.setSelectionBackground(new Color(184, 207, 229));
+
+        table.setShowVerticalLines(false);
+
+        table.setIntercellSpacing(new Dimension(0, 0));
+
+        JTableHeader header = table.getTableHeader();
+
+        header.setFont(new Font("Segoe UI", Font.BOLD, 13));
+
+        header.setBackground(new Color(0, 102, 204));
+
+        header.setForeground(Color.WHITE);
+
+        DefaultTableCellRenderer center =
+                new DefaultTableCellRenderer();
+
+        center.setHorizontalAlignment(JLabel.CENTER);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+
+            table.getColumnModel()
+                    .getColumn(i)
+                    .setCellRenderer(center);
+        }
+    }
     // ─────────────────────────────────────────
     //  LOAD STUDENTS
     // ─────────────────────────────────────────
     public void loadStudents() {
         studentDropdown.removeAllItems();
         studentDropdown.addItem(null);
-        try {
-            pst = con.prepareStatement(
-                "SELECT id,name,email,phone,gender,skills," +
-                "country,age,address,bio FROM students ORDER BY name");
-            rs = pst.executeQuery();
+
+        String query =
+        "SELECT id, name, email, phone, gender, skills, " +
+        "country, age, address, bio " +
+        "FROM students ORDER BY name";
+
+        try (
+            PreparedStatement pst = con.prepareStatement(query);
+            ResultSet rs = pst.executeQuery()
+        ) {
             while (rs.next()) {
-                studentDropdown.addItem(new Student(
-                    rs.getInt("id"),        rs.getString("name"),
-                    rs.getString("email"),  rs.getString("phone"),
-                    rs.getString("gender"), rs.getString("skills"),
-                    rs.getString("country"),rs.getInt("age"),
-                    rs.getString("address"),rs.getString("bio")
-                ));
+                Student student = new Student(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("gender"),
+                    rs.getString("skills"),
+                    rs.getString("country"),
+                    rs.getInt("age"),
+                    rs.getString("address"),
+                    rs.getString("bio")
+                );
+                studentDropdown.addItem(student);
             }
-        } catch (Exception ex) { ex.printStackTrace(); }
+        } catch (Exception e) { 
+
+            JOptionPane.showMessageDialog(
+
+                this,
+                "Failed to load students.",
+                "Database Error",
+                JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace(); 
+        }
     }
 
     // ─────────────────────────────────────────
@@ -476,7 +541,7 @@ public class FeesReceiptForm extends JFrame {
     public void onStudentSelected() {
         Student s = (Student) studentDropdown.getSelectedItem();
 
-        courseTableModel.setRowCount(0);
+        styleTable(courseTable);
         lblCourseFees.setText("₹ 0.00");
         lblDiscount  .setText("—");
         lblNetFees   .setText("₹ 0.00");
@@ -498,47 +563,62 @@ public class FeesReceiptForm extends JFrame {
 
         try {
             PreparedStatement ps;
-
+            
             if (filteredCourseIds != null && !filteredCourseIds.isEmpty()) {
 
-                // ===== SHOW ONLY FILTERED COURSES (from CourseSelectionForm) =====
+                // ===== SHOW ONLY UNPAID FILTERED COURSES =====
                 StringBuilder inClause = new StringBuilder();
+            
                 for (int i = 0; i < filteredCourseIds.size(); i++) {
                     inClause.append(i == 0 ? "?" : ",?");
                 }
-
+            
                 ps = con.prepareStatement(
-                    "SELECT c.course_name, c.duration, c.fees " +
+                    "SELECT c.id, c.course_name, c.duration, c.fees " +
                     "FROM enrollments e " +
                     "JOIN courses c ON e.course_id = c.id " +
                     "WHERE e.student_id = ? " +
-                    "AND c.id IN (" + inClause + ")");
-
+                    "AND c.id IN (" + inClause + ") " +
+            
+                    // REMOVE ALREADY PAID COURSES
+                    "AND c.id NOT IN ( " +
+                    "   SELECT fpc.course_id " +
+                    "   FROM fee_payment_courses fpc " +
+                    "   WHERE fpc.student_id = ? " +
+                    ")"
+                );
+            
                 ps.setInt(1, s.getId());
-                for (int i = 0; i < filteredCourseIds.size(); i++) {
-                    ps.setInt(i + 2, filteredCourseIds.get(i));
+            
+                int index = 2;
+            
+                for (Integer courseId : filteredCourseIds) {
+                    ps.setInt(index++, courseId);
                 }
-
+            
+                // for NOT IN query
+                ps.setInt(index, s.getId());
+            
             } else {
-
+            
                 // ===== SHOW ONLY UNPAID COURSES =====
-                // enrolled courses minus courses already paid
                 ps = con.prepareStatement(
-                    "SELECT c.course_name, c.duration, c.fees " +
+                    "SELECT c.id, c.course_name, c.duration, c.fees " +
                     "FROM enrollments e " +
                     "JOIN courses c ON e.course_id = c.id " +
                     "WHERE e.student_id = ? " +
-                    "AND c.id NOT IN (" +
-                    "  SELECT fpc.course_id " +
-                    "  FROM fee_payment_courses fpc " +
-                    "  WHERE fpc.student_id = ?" +
-                    ")");
-
+                    "AND c.id NOT IN ( " +
+                    "   SELECT fpc.course_id " +
+                    "   FROM fee_payment_courses fpc " +
+                    "   WHERE fpc.student_id = ? " +
+                    ")"
+                );
+            
                 ps.setInt(1, s.getId());
                 ps.setInt(2, s.getId());
             }
-
-            rs = ps.executeQuery();
+            
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 double fee = rs.getDouble("fees");
@@ -678,11 +758,11 @@ public class FeesReceiptForm extends JFrame {
 
         // fetch from DB
         try {
-            pst = con.prepareStatement(
+             PreparedStatement pst = con.prepareStatement(
                 "SELECT * FROM fee_payments WHERE student_id=? " +
                 "ORDER BY paid_at DESC LIMIT 1");
             pst.setInt(1, s.getId());
-            rs = pst.executeQuery();
+            ResultSet rs = pst.executeQuery();
 
             if (!rs.next()) {
                 JOptionPane.showMessageDialog(this,
@@ -888,11 +968,11 @@ public class FeesReceiptForm extends JFrame {
                  "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
                  "ORDER BY fp.paid_at DESC";
 
-            pst = con.prepareStatement(q);
+            PreparedStatement pst = con.prepareStatement(q);
             if (nameFilter != null && !nameFilter.isBlank())
                 pst.setString(1, nameFilter);
 
-            rs = pst.executeQuery();
+            ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 Timestamp ts = rs.getTimestamp("paid_at");
                 String date  = ts != null
@@ -929,10 +1009,10 @@ public class FeesReceiptForm extends JFrame {
         filterDropdown.removeAllItems();
         filterDropdown.addItem("All Students");
         try {
-            pst = con.prepareStatement(
+            PreparedStatement pst = con.prepareStatement(
                 "SELECT DISTINCT s.name FROM fee_payments fp " +
                 "JOIN students s ON fp.student_id=s.id ORDER BY s.name");
-            rs = pst.executeQuery();
+            ResultSet rs = pst.executeQuery();
             while (rs.next())
                 filterDropdown.addItem(rs.getString("name"));
         } catch (Exception ex) { ex.printStackTrace(); }
@@ -973,7 +1053,7 @@ public class FeesReceiptForm extends JFrame {
 
         try {
             // delete course-level payment records first (foreign key)
-            pst = con.prepareStatement(
+            PreparedStatement pst = con.prepareStatement(
                 "DELETE FROM fee_payment_courses WHERE fee_payment_id = ?");
             pst.setInt(1, paymentId);
             pst.executeUpdate();
@@ -1016,7 +1096,7 @@ public class FeesReceiptForm extends JFrame {
     public void savePaymentToDB(Student s, double total,
             double disc, double payable, String mode, int count) {
         try {
-            pst = con.prepareStatement(
+            PreparedStatement pst = con.prepareStatement(
                 "INSERT INTO fee_payments " +
                 "(student_id, total_fees, discount_amt, amount_paid, " +
                 "payment_mode, payment_status) " +
@@ -1040,31 +1120,79 @@ public class FeesReceiptForm extends JFrame {
                     && !filteredCourseIds.isEmpty()) {
 
                 for (int courseId : filteredCourseIds) {
-                    PreparedStatement ps2 = con.prepareStatement(
-                        "INSERT INTO fee_payment_courses " +
-                        "(fee_payment_id, student_id, course_id) " +
-                        "VALUES (?,?,?)");
-                    ps2.setInt(1, paymentId);
-                    ps2.setInt(2, s.getId());
-                    ps2.setInt(3, courseId);
-                    ps2.executeUpdate();
+                    PreparedStatement checkStmt = con.prepareStatement(
+                        "SELECT id FROM fee_payment_courses " +
+                        "WHERE student_id=? AND course_id=?"
+                    );
+                    
+                    checkStmt.setInt(1, s.getId());
+                    checkStmt.setInt(2, courseId);
+                    
+                    ResultSet checkRs = checkStmt.executeQuery();
+                    
+                    if (!checkRs.next()) {
+                    
+                        PreparedStatement ps2 = con.prepareStatement(
+                            "INSERT INTO fee_payment_courses " +
+                            "(fee_payment_id, student_id, course_id) " +
+                            "VALUES (?,?,?)"
+                        );
+                    
+                        ps2.setInt(1, paymentId);
+                        ps2.setInt(2, s.getId());
+                        ps2.setInt(3, courseId);
+                    
+                        ps2.executeUpdate();
+                    }
                 }
 
             } else if (paymentId != -1) {
 
-                // opened from Main — save all currently shown courses
                 for (int i = 0; i < courseTableModel.getRowCount(); i++) {
+            
                     String courseName =
-                        courseTableModel.getValueAt(i, 0).toString();
-                    PreparedStatement ps2 = con.prepareStatement(
-                        "INSERT INTO fee_payment_courses " +
-                        "(fee_payment_id, student_id, course_id) " +
-                        "SELECT ?, s.id, c.id FROM students s, courses c " +
-                        "WHERE s.id=? AND c.course_name=?");
-                    ps2.setInt(1, paymentId);
-                    ps2.setInt(2, s.getId());
-                    ps2.setString(3, courseName);
-                    ps2.executeUpdate();
+                            courseTableModel.getValueAt(i, 0).toString();
+            
+                    // first get course id
+                    PreparedStatement getCourse = con.prepareStatement(
+                        "SELECT id FROM courses WHERE course_name=?"
+                    );
+            
+                    getCourse.setString(1, courseName);
+            
+                    ResultSet crs = getCourse.executeQuery();
+            
+                    if (crs.next()) {
+            
+                        int courseId = crs.getInt("id");
+            
+                        // CHECK DUPLICATE
+                        PreparedStatement checkStmt = con.prepareStatement(
+                            "SELECT id FROM fee_payment_courses " +
+                            "WHERE student_id=? AND course_id=?"
+                        );
+            
+                        checkStmt.setInt(1, s.getId());
+                        checkStmt.setInt(2, courseId);
+            
+                        ResultSet checkRs = checkStmt.executeQuery();
+            
+                        // INSERT ONLY IF NOT PAID
+                        if (!checkRs.next()) {
+            
+                            PreparedStatement ps2 = con.prepareStatement(
+                                "INSERT INTO fee_payment_courses " +
+                                "(fee_payment_id, student_id, course_id) " +
+                                "VALUES (?,?,?)"
+                            );
+            
+                            ps2.setInt(1, paymentId);
+                            ps2.setInt(2, s.getId());
+                            ps2.setInt(3, courseId);
+            
+                            ps2.executeUpdate();
+                        }
+                    }
                 }
             }
 
@@ -1088,7 +1216,7 @@ public class FeesReceiptForm extends JFrame {
         l.setForeground(new Color(80,80,90)); return l; }
 
     private JButton colorBtn(String t, Color bg, int x, int y) {
-        JButton b = new JButton(t);
+        b = new JButton(t);
         b.setFont(new Font("Segoe UI", Font.BOLD, 13));
         b.setBackground(bg); b.setForeground(Color.WHITE);
         b.setBounds(x, y, 155, 38); return b; }
