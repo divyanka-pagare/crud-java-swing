@@ -5,6 +5,7 @@ import src.forms.master.TeacherForm;
 import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.CourseSelectionForm;
 import src.forms.transaction.FeesReceiptForm;
+import src.forms.transaction.StudentEnquiryForm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,6 +37,7 @@ public class MainMenu extends JFrame {
         transaction.add(menuItem("Student Registration", () -> new RegistrationForm()));
         transaction.add(menuItem("Course Enrollment",    () -> new CourseSelectionForm()));
         transaction.add(menuItem("Fees Receipt",         () -> new FeesReceiptForm()));
+        transaction.add(menuItem("Student Enquiry",      () -> new StudentEnquiryForm()));
         menuBar.add(transaction);
 
         // ── Report Menu ──
