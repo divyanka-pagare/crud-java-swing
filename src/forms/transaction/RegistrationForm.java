@@ -2,6 +2,7 @@ package src.forms.transaction;
 
 import src.db.DBConnection;
 import src.components.ModernButton;
+import src.components.ModernTable;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -25,7 +26,7 @@ public class RegistrationForm extends JFrame {
     JComboBox<String> countryBox;
     JSpinner       ageSpinner;
     JTextArea      bioArea;
-    JTable         table;
+    ModernTable    table;
     DefaultTableModel model;
     JButton        addBtn, updateBtn, deleteBtn, clearBtn;
 
@@ -38,9 +39,11 @@ public class RegistrationForm extends JFrame {
     public RegistrationForm() {
 
         setTitle("Registration Form - CRUD Operations");
-        setSize(1200, 750);
+        setSize(1300, 725);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE); // changed from EXIT so Main stays alive
         setLocationRelativeTo(null);
+
 
         connectDB();
 
@@ -171,117 +174,17 @@ public class RegistrationForm extends JFrame {
             "Skills","Country","Age","Address","Bio"
         };
         model = new DefaultTableModel(columns, 0);
-        table = new JTable(model) {
-            @Override
-            public String getToolTipText(java.awt.event.MouseEvent e) {
-                int row = rowAtPoint(e.getPoint());
-                int col = columnAtPoint(e.getPoint());
-                if (row > -1 && col > -1) {
-                    Object v = getValueAt(row, col);
-                    return v != null ? v.toString() : null;
-                }
-                return null;
-            }
-        };
-        // ===== MODERN TABLE UI =====
+        table = new ModernTable();
+        table.setModel(model);
 
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        
-        table.setRowHeight(40);
-        
-        table.setShowGrid(false);
-        
-        table.setIntercellSpacing(new Dimension(0, 0));
-        
-        table.setFocusable(false);
-        
-        table.setSelectionBackground(new Color(232, 240, 254));
-        
-        table.setSelectionForeground(Color.BLACK);
-        
-        table.setBackground(Color.WHITE);
-        
-        table.setForeground(new Color(40, 40, 40));
-        
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        
-        table.setBorder(BorderFactory.createEmptyBorder());
-        
-        
-        
-        // ===== TABLE HEADER =====
-        
-        table.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 15)
-        );
-        
-        table.getTableHeader().setBackground(
-                new Color(22, 34, 57)
-        );
-        
-        table.getTableHeader().setForeground(Color.WHITE);
-        
-        table.getTableHeader().setPreferredSize(
-                new Dimension(100, 45)
-        );
-        
-        table.getTableHeader().setBorder(
-                BorderFactory.createMatteBorder(
-                    0, 0, 1, 0,
-                        new Color(40, 55, 80)
-                )
 
-        );
-        
-        table.getTableHeader().setReorderingAllowed(false);
+        table.getColumnModel().getColumn(1).setPreferredWidth(180);
 
-        table.getTableHeader().setOpaque(false);
+        table.getColumnModel().getColumn(4).setPreferredWidth(130);
 
-        // ===== ALTERNATE ROW COLORS =====
-        
-        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-        
-            @Override
-            public Component getTableCellRendererComponent(
-                    JTable table,
-                    Object value,
-                    boolean isSelected,
-                    boolean hasFocus,
-                    int row,
-                    int column
-            ) {
-        
-                Component c = super.getTableCellRendererComponent(
-                        table,
-                        value,
-                        isSelected,
-                        hasFocus,
-                        row,
-                        column
-                );
-        
-                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
-        
-                if (isSelected) {
-        
-                    c.setBackground(new Color(232, 240, 254));
-        
-                    c.setForeground(Color.BLACK);
-        
-                } else {
-        
-                    if (row % 2 == 0) {
-                        c.setBackground(Color.WHITE);
-                    } else {
-                        c.setBackground(new Color(245, 247, 250));
-                    }
-        
-                    c.setForeground(new Color(50, 50, 50));
-                }
-        
-                return c;
-            }
-        });
+    
+      
         DefaultTableCellRenderer centerR = new DefaultTableCellRenderer();
         centerR.setHorizontalAlignment(JLabel.CENTER);
         table.getColumnModel().getColumn(2).setCellRenderer(centerR);

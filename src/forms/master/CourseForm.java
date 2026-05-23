@@ -1,7 +1,7 @@
 package src.forms.master;
 
 import src.db.DBConnection;
-import src.components.ModernButton;
+// import src.components.ModernButton;
 import src.models.Course;
 
 import src.repositories.CourseRepository;
@@ -30,7 +30,8 @@ public class CourseForm extends JFrame {
     public CourseForm() {
 
         setTitle("Course Master");
-        setSize(900, 600);
+        setSize(1200, 720);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -80,6 +81,7 @@ public class CourseForm extends JFrame {
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBounds(30, 290, 820, 260);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        
         main.add(scroll);
 
         add(main);

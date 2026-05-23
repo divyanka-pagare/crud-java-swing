@@ -26,7 +26,6 @@ import src.services.StudentService;
 import src.utils.PDFReceiptGenerator;
 
 public class FeesReceiptForm extends JFrame {
-
    
     // ===== LEFT PANEL =====
     JComboBox<Student> studentDropdown;
@@ -64,6 +63,12 @@ public class FeesReceiptForm extends JFrame {
     // called from Main menu — shows all unpaid courses
     public FeesReceiptForm() {
         this(null);
+
+        setTitle("Course Selection Form");
+        setSize(1200, 700);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     // called from CourseSelectionForm — shows only selected new courses
@@ -118,7 +123,7 @@ public class FeesReceiptForm extends JFrame {
 
         setTitle("Fees Receipt");
     
-        setSize(1200, 750);
+        setSize(1220, 750);
     
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     

@@ -52,7 +52,8 @@ public class CourseSelectionForm extends JFrame {
     public CourseSelectionForm() {
 
         setTitle("Course Selection Form");
-        setSize(1150, 720);
+        setSize(1200, 700);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 

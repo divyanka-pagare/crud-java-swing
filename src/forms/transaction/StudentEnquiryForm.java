@@ -41,6 +41,7 @@ public class StudentEnquiryForm extends JFrame {
 
         setTitle("Student Enquiry");
         setSize(1100, 720);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
