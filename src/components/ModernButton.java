@@ -80,8 +80,8 @@ public class ModernButton extends JButton {
                 shadowOffset,
                 getWidth() - shadowOffset,
                 getHeight() - shadowOffset,
-                18,
-                18
+                12,
+                12
         );
 
         // Button Background
