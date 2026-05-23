@@ -6,11 +6,8 @@ import src.components.ModernButton;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-// import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-// import javax.swing.table.JTableHeader;
-// import javax.swing.table.TableCellRenderer;
-// import javax.swing.table.TableColumnModel;
+
 import java.awt.*;
 import java.sql.*;
 
@@ -23,6 +20,7 @@ import src.utils.UIUtils;
 
 import src.services.PaymentService;
 import src.services.StudentService;
+import src.utils.FormResetUtils;
 import src.utils.PDFReceiptGenerator;
 
 public class FeesReceiptForm extends JFrame {
@@ -88,35 +86,6 @@ public class FeesReceiptForm extends JFrame {
         loadInitialData();
 
         setVisible(true);
-    }
-
-    public void loadStudents() {
-        
-
-        studentDropdown.removeAllItems();
-    
-        studentDropdown.addItem(null);
-    
-        try {
-    
-            StudentService studentService = new StudentService(con);
-    
-            for (Student student : studentService.getAllStudents()) {
-    
-                studentDropdown.addItem(student);
-            }
-    
-        } catch (Exception e) {
-    
-            JOptionPane.showMessageDialog(
-                this,
-                "Failed to load students.",
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE
-            );
-    
-            e.printStackTrace();
-        }
     }
     
     private void initializeFrame() {
@@ -224,9 +193,7 @@ public class FeesReceiptForm extends JFrame {
 
         center.setHorizontalAlignment(JLabel.CENTER);
 
-        for (int i = 0; i < courseTable.getColumnCount(); i++) {
-            TableUtils.styleTable(courseTable);
-    }
+        TableUtils.styleTable(courseTable);
 
         JScrollPane courseScroll = new JScrollPane(courseTable);
         courseScroll.setBounds(30, 230, 430, 150);
@@ -833,15 +800,17 @@ public class FeesReceiptForm extends JFrame {
     //  CLEAR FORM
     // ─────────────────────────────────────────
     public void clearForm() {
-        studentDropdown.setSelectedIndex(0);
-        paymentGroup.clearSelection();
-        txtTransactionId.setText("");
-        txtTransactionId.setVisible(false);
-        lblTransactionId.setVisible(false);
-        courseTableModel.setRowCount(0);
-        lblCourseFees.setText("₹ 0.00");
-        lblDiscount  .setText("—");
-        lblNetFees   .setText("₹ 0.00");
+
+        FormResetUtils.resetFeesForm(
+            studentDropdown,
+            paymentGroup,
+            txtTransactionId,
+            lblTransactionId,
+            courseTableModel,
+            lblCourseFees,
+            lblDiscount,
+            lblNetFees
+        );
     }
 
     // ─────────────────────────────────────────
