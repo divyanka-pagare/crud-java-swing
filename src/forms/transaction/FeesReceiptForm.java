@@ -2,6 +2,7 @@ package src.forms.transaction;
 
 import src.db.DBConnection;
 import src.models.Student;
+import src.components.ModernButton;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -822,6 +823,7 @@ public class FeesReceiptForm extends JFrame {
                 "Error: " + ex.getMessage());
         }
     }
+    
     // ─────────────────────────────────────────
     //  CLEAR FORM
     // ─────────────────────────────────────────
@@ -853,10 +855,14 @@ public class FeesReceiptForm extends JFrame {
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         l.setForeground(new Color(80,80,90)); return l; }
 
-    private JButton colorBtn(String t, Color bg, int x, int y) {
-        b = new JButton(t);
+    private JButton colorBtn(String text, Color color, int x, int y) {
+        b = new ModernButton(text, color);
         b.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        b.setBackground(bg); b.setForeground(Color.WHITE);
-        b.setBounds(x, y, 155, 38); return b; }
+        b.setBackground(color); 
+        b.setForeground(Color.WHITE);
+        b.setBounds(x, y, 155, 38); 
+        
+        return b; 
+    }
    
 }

@@ -1,6 +1,7 @@
 package src.forms.transaction;
 
 import src.db.DBConnection;
+import src.components.ModernButton;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -110,9 +111,9 @@ public class RegistrationForm extends JFrame {
         webDev = new JCheckBox("Web Development");
         ai     = new JCheckBox("AI / ML");
         java.setLocation(150, 320);   java.setSize(java.getPreferredSize());
-        python.setLocation(220, 320); python.setSize(python.getPreferredSize());
-        webDev.setLocation(300, 320); webDev.setSize(webDev.getPreferredSize());
-        ai.setLocation(450, 320);     ai.setSize(ai.getPreferredSize());
+        python.setLocation(230, 320); python.setSize(python.getPreferredSize());
+        webDev.setLocation(330, 320); webDev.setSize(webDev.getPreferredSize());
+        ai.setLocation(480, 320);     ai.setSize(ai.getPreferredSize());
         panel.add(java); panel.add(python); panel.add(webDev); panel.add(ai);
 
         // ===== Country =====
@@ -133,7 +134,7 @@ public class RegistrationForm extends JFrame {
         JScrollPane addressScroll = new JScrollPane(txtAddress,
             JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        addressScroll.setBounds(150, 470, 250, 60);
+        addressScroll.setBounds(150, 470, 300, 60);
         panel.add(addressScroll);
         addPlaceholder(txtAddress, "Enter full address");
 
@@ -143,7 +144,7 @@ public class RegistrationForm extends JFrame {
         bioArea.setWrapStyleWord(true);
         bioArea.setFont(new Font("Arial", Font.PLAIN, 14));
         JScrollPane bioScroll = new JScrollPane(bioArea);
-        bioScroll.setBounds(150, 550, 250, 60);
+        bioScroll.setBounds(150, 550, 300, 60);
         panel.add(bioScroll);
         addPlaceholder(bioArea, "Write something about yourself");
 
@@ -182,15 +183,105 @@ public class RegistrationForm extends JFrame {
                 return null;
             }
         };
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        table.setSelectionBackground(new Color(184, 207, 229));
-        table.setGridColor(Color.LIGHT_GRAY);
-        table.setRowHeight(35);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        table.getColumnModel().getColumn(1).setPreferredWidth(180);
-        table.getColumnModel().getColumn(4).setPreferredWidth(130);
+        // ===== MODERN TABLE UI =====
 
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        table.setRowHeight(40);
+        
+        table.setShowGrid(false);
+        
+        table.setIntercellSpacing(new Dimension(0, 0));
+        
+        table.setFocusable(false);
+        
+        table.setSelectionBackground(new Color(232, 240, 254));
+        
+        table.setSelectionForeground(Color.BLACK);
+        
+        table.setBackground(Color.WHITE);
+        
+        table.setForeground(new Color(40, 40, 40));
+        
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        
+        table.setBorder(BorderFactory.createEmptyBorder());
+        
+        
+        
+        // ===== TABLE HEADER =====
+        
+        table.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 15)
+        );
+        
+        table.getTableHeader().setBackground(
+                new Color(22, 34, 57)
+        );
+        
+        table.getTableHeader().setForeground(Color.WHITE);
+        
+        table.getTableHeader().setPreferredSize(
+                new Dimension(100, 45)
+        );
+        
+        table.getTableHeader().setBorder(
+                BorderFactory.createMatteBorder(
+                    0, 0, 1, 0,
+                        new Color(40, 55, 80)
+                )
+
+        );
+        
+        table.getTableHeader().setReorderingAllowed(false);
+
+        table.getTableHeader().setOpaque(false);
+
+        // ===== ALTERNATE ROW COLORS =====
+        
+        table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column
+            ) {
+        
+                Component c = super.getTableCellRendererComponent(
+                        table,
+                        value,
+                        isSelected,
+                        hasFocus,
+                        row,
+                        column
+                );
+        
+                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        
+                if (isSelected) {
+        
+                    c.setBackground(new Color(232, 240, 254));
+        
+                    c.setForeground(Color.BLACK);
+        
+                } else {
+        
+                    if (row % 2 == 0) {
+                        c.setBackground(Color.WHITE);
+                    } else {
+                        c.setBackground(new Color(245, 247, 250));
+                    }
+        
+                    c.setForeground(new Color(50, 50, 50));
+                }
+        
+                return c;
+            }
+        });
         DefaultTableCellRenderer centerR = new DefaultTableCellRenderer();
         centerR.setHorizontalAlignment(JLabel.CENTER);
         table.getColumnModel().getColumn(2).setCellRenderer(centerR);
@@ -200,16 +291,19 @@ public class RegistrationForm extends JFrame {
         table.getColumnModel().getColumn(7).setCellRenderer(rightR);
 
         JScrollPane tableScroll = new JScrollPane(table);
-        tableScroll.setBounds(550, 70, 600, 500);
+        tableScroll.setBorder(
+            BorderFactory.createLineBorder(
+                    new Color(220,220,220),
+                    1
+            )
+        );
+    
+        tableScroll.getViewport().setBackground(Color.WHITE);
+
+        tableScroll.setBounds(600, 70, 650, 500);
         tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         panel.add(tableScroll);
-
-        // ===== Button Actions =====
-        addBtn.addActionListener(e -> addRecord());
-        updateBtn.addActionListener(e -> updateRecord());
-        deleteBtn.addActionListener(e -> deleteRecord());
-        clearBtn.addActionListener(e -> clearForm());
 
         // ===== Button Actions =====
         addBtn.addActionListener(e -> addRecord());
@@ -276,13 +370,13 @@ public class RegistrationForm extends JFrame {
     }
 
     // ===== HELPER: button =====
-    private JButton createButton(String text, Color bg, int x, int y) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setBackground(bg);
-        btn.setForeground(Color.WHITE);
-        btn.setBounds(x, y, 120, 40);
-        return btn;
+    private JButton createButton(String text, Color color, int x, int y) {
+        JButton button = new ModernButton(text, color);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        // button.setBackground(color);
+        // button.setForeground(Color.WHITE);
+        button.setBounds(x, y, 130, 45);
+        return button;
     }
 
     // ===== ADD =====
