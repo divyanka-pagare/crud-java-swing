@@ -1,4 +1,4 @@
-package src.forms;
+package src.forms.transaction;
 
 import src.db.DBConnection;
 import src.models.Course;
@@ -306,8 +306,8 @@ public class CourseSelectionForm extends JFrame {
 
         enrollBtn.addActionListener(e -> enrollStudent());
         clearBtn .addActionListener(e -> clearForm());
-        backBtn.addActionListener(e -> {new src.forms.RegistrationForm();});
-        feesBtn.addActionListener(e -> new src.forms.FeesReceiptForm());
+        backBtn.addActionListener(e -> {new src.forms.transaction.RegistrationForm();});
+        feesBtn.addActionListener(e -> new src.forms.transaction.FeesReceiptForm());
 
         btnRefresh.addActionListener(e -> {
             String filter = filterDropdown.getSelectedItem().toString();

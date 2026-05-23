@@ -1,4 +1,4 @@
-package src.forms;
+package src.forms.transaction;
 
 import src.db.DBConnection;
 
@@ -226,7 +226,7 @@ public class RegistrationForm extends JFrame {
         panel.add(courseBtn);
 
         courseBtn.addActionListener(e -> {
-            new src.forms.CourseSelectionForm();
+            new src.forms.transaction.CourseSelectionForm();
         });
 
         

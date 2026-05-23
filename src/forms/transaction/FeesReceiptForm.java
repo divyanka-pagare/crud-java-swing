@@ -1,4 +1,4 @@
-package src.forms;
+package src.forms.transaction;
 
 import src.db.DBConnection;
 import src.models.Student;
@@ -397,7 +397,7 @@ public class FeesReceiptForm extends JFrame {
         payBtn     .addActionListener(e -> payFees());
         downloadBtn.addActionListener(e -> downloadReceipt());
         clearBtn   .addActionListener(e -> clearForm());
-        backBtn.addActionListener(e -> {new src.forms.CourseSelectionForm(); dispose();});
+        backBtn.addActionListener(e -> {new src.forms.transaction.CourseSelectionForm(); dispose();});
 
         cancelEnrollBtn.addActionListener(e -> cancelEnrollment());
 
@@ -672,7 +672,7 @@ public class FeesReceiptForm extends JFrame {
             double disc    = rs.getDouble("discount_amt");
             double paid    = rs.getDouble("amount_paid");
             String mode    = rs.getString("payment_mode");
-            int    count   = courseTableModel.getRowCount();
+            // int    count   = courseTableModel.getRowCount();
 
             PDFReceiptGenerator.generateReceipt(
                 this,

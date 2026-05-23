@@ -1,13 +1,12 @@
-package src.forms;
+package src.forms.transaction;
 
 import src.models.Student;
+import src.services.PaymentService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import src.services.PaymentService;
 
 
 public class UpiPaymentScreen extends JFrame {
