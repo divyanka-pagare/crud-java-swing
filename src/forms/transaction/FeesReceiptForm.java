@@ -3,13 +3,22 @@ package src.forms.transaction;
 import src.db.DBConnection;
 import src.models.Student;
 import src.components.ModernButton;
+import src.components.ModernComboBox;
+import src.components.ModernPanel;
+import src.components.ModernRadioButton;
+import src.components.ModernTextField;
+import src.constants.UIConstants;
+
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 
 import java.time.format.DateTimeFormatter;
 
@@ -20,6 +29,10 @@ import src.utils.UIUtils;
 
 import src.services.PaymentService;
 import src.services.StudentService;
+
+import src.repositories.PaymentRepository;
+import src.repositories.EnrollmentRepository;
+
 import src.utils.FormResetUtils;
 import src.utils.PDFReceiptGenerator;
 
@@ -55,6 +68,9 @@ public class FeesReceiptForm extends JFrame {
 
     static final int    DISCOUNT_THRESHOLD = 3;
     static final double DISCOUNT_PERCENT   = 10.0;
+
+    private PaymentRepository paymentRepository;
+    private EnrollmentRepository enrollmentRepository;
 
     List<Integer> filteredCourseIds = null; // null means show all
 
@@ -102,6 +118,9 @@ public class FeesReceiptForm extends JFrame {
 
         paymentService = new PaymentService(con);
         studentService = new StudentService(con);
+
+        paymentRepository = new PaymentRepository(con);
+        enrollmentRepository = new EnrollmentRepository(con);
     }
 
     private void initializeMainPanel() {
@@ -296,11 +315,11 @@ public class FeesReceiptForm extends JFrame {
         });
 
         // --- Buttons ---
-        payBtn      = colorBtn("PAY NOW",           new Color(0, 120, 215),   30, 602);
-        downloadBtn = colorBtn("Download Receipt",  new Color(40, 167, 69),  200, 602);
-        clearBtn    = colorBtn("CLEAR",             new Color(108,117,125),  370, 602);
+        payBtn      = colorBtn("PAY NOW",           UIConstants.PRIMARY,   30, 602);
+        downloadBtn = colorBtn("Download Receipt",  UIConstants.SUCCESS,  200, 602);
+        clearBtn    = colorBtn("CLEAR",             UIConstants.SECONDARY,  370, 602);
         
-        backBtn = colorBtn("← Course Selection", new Color(52, 58, 64), 30, 655);
+        backBtn = colorBtn("← Course Selection", UIConstants.DARK, 30, 655);
         // ===== CANCEL SELECTED ENROLLMENT BUTTON =====
         cancelEnrollBtn = new JButton("Cancel Selected Enrollment");
         cancelEnrollBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -425,63 +444,12 @@ public class FeesReceiptForm extends JFrame {
         int    count = 0;
 
         try {
-            PreparedStatement ps;
             
-            if (filteredCourseIds != null && !filteredCourseIds.isEmpty()) {
-
-                // ===== SHOW ONLY UNPAID FILTERED COURSES =====
-                StringBuilder inClause = new StringBuilder();
-            
-                for (int i = 0; i < filteredCourseIds.size(); i++) {
-                    inClause.append(i == 0 ? "?" : ",?");
-                }
-            
-                ps = con.prepareStatement(
-                    "SELECT c.id, c.course_name, c.duration, c.fees " +
-                    "FROM enrollments e " +
-                    "JOIN courses c ON e.course_id = c.id " +
-                    "WHERE e.student_id = ? " +
-                    "AND c.id IN (" + inClause + ") " +
-            
-                    // REMOVE ALREADY PAID COURSES
-                    "AND c.id NOT IN ( " +
-                    "   SELECT fpc.course_id " +
-                    "   FROM fee_payment_courses fpc " +
-                    "   WHERE fpc.student_id = ? " +
-                    ")"
-                );
-            
-                ps.setInt(1, s.getId());
-            
-                int index = 2;
-            
-                for (Integer courseId : filteredCourseIds) {
-                    ps.setInt(index++, courseId);
-                }
-            
-                // for NOT IN query
-                ps.setInt(index, s.getId());
-            
-            } else {
-            
-                // ===== SHOW ONLY UNPAID COURSES =====
-                ps = con.prepareStatement(
-                    "SELECT c.id, c.course_name, c.duration, c.fees " +
-                    "FROM enrollments e " +
-                    "JOIN courses c ON e.course_id = c.id " +
-                    "WHERE e.student_id = ? " +
-                    "AND c.id NOT IN ( " +
-                    "   SELECT fpc.course_id " +
-                    "   FROM fee_payment_courses fpc " +
-                    "   WHERE fpc.student_id = ? " +
-                    ")"
-                );
-            
-                ps.setInt(1, s.getId());
-                ps.setInt(2, s.getId());
-            }
-            
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs =
+                enrollmentRepository.getUnpaidCourses(
+                    s,
+                filteredCourseIds
+        );
 
             while (rs.next()) {
                 double fee = rs.getDouble("fees");
@@ -630,11 +598,7 @@ public class FeesReceiptForm extends JFrame {
 
         // fetch from DB
         try {
-             PreparedStatement pst = con.prepareStatement(
-                "SELECT * FROM fee_payments WHERE student_id=? " +
-                "ORDER BY paid_at DESC LIMIT 1");
-            pst.setInt(1, s.getId());
-            ResultSet rs = pst.executeQuery();
+            ResultSet rs = paymentRepository.getLatestPaymentByStudentId(s.getId());
 
             if (!rs.next()) {
                 JOptionPane.showMessageDialog(this,
@@ -668,28 +632,30 @@ public class FeesReceiptForm extends JFrame {
     public void loadReceiptTable(String nameFilter) {
         receiptTableModel.setRowCount(0);
         try {
-            String q =
-                "SELECT fp.id, s.name, " +
-                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
-                "fp.total_fees, fp.discount_amt, " +
-                "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
-                "FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id " +
-                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
-                "LEFT JOIN courses c ON fpc.course_id = c.id ";
 
-            if (nameFilter != null && !nameFilter.isBlank())
-                q += "WHERE s.name=? ";
+            ResultSet rs = paymentRepository.getAllReceipts(nameFilter);
+            // String q =
+            //     "SELECT fp.id, s.name, " +
+            //     "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
+            //     "fp.total_fees, fp.discount_amt, " +
+            //     "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
+            //     "FROM fee_payments fp " +
+            //     "JOIN students s ON fp.student_id = s.id " +
+            //     "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
+            //     "LEFT JOIN courses c ON fpc.course_id = c.id ";
 
-            q += "GROUP BY fp.id, s.name, fp.total_fees, fp.discount_amt, " +
-                 "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
-                 "ORDER BY fp.paid_at DESC";
+            // if (nameFilter != null && !nameFilter.isBlank())
+            //     q += "WHERE s.name=? ";
 
-            PreparedStatement pst = con.prepareStatement(q);
-            if (nameFilter != null && !nameFilter.isBlank())
-                pst.setString(1, nameFilter);
+            // q += "GROUP BY fp.id, s.name, fp.total_fees, fp.discount_amt, " +
+            //      "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
+            //      "ORDER BY fp.paid_at DESC";
 
-            ResultSet rs = pst.executeQuery();
+            // PreparedStatement pst = con.prepareStatement(q);
+            // if (nameFilter != null && !nameFilter.isBlank())
+            //     pst.setString(1, nameFilter);
+
+            // ResultSet rs = pst.executeQuery();
             while (rs.next()) {
                 Timestamp ts = rs.getTimestamp("paid_at");
                 String date  = ts != null
@@ -726,10 +692,13 @@ public class FeesReceiptForm extends JFrame {
         filterDropdown.removeAllItems();
         filterDropdown.addItem("All Students");
         try {
-            PreparedStatement pst = con.prepareStatement(
-                "SELECT DISTINCT s.name FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id=s.id ORDER BY s.name");
-            ResultSet rs = pst.executeQuery();
+
+            ResultSet rs = paymentRepository.getStudentsWithPayments();
+
+            // PreparedStatement pst = con.prepareStatement(
+            //     "SELECT DISTINCT s.name FROM fee_payments fp " +
+            //     "JOIN students s ON fp.student_id=s.id ORDER BY s.name");
+            // ResultSet rs = pst.executeQuery();
             while (rs.next())
                 filterDropdown.addItem(rs.getString("name"));
         } catch (Exception ex) { ex.printStackTrace(); }
@@ -768,32 +737,53 @@ public class FeesReceiptForm extends JFrame {
 
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        try {
+
+            
             // delete course-level payment records first (foreign key)
-            PreparedStatement pst = con.prepareStatement(
-                "DELETE FROM fee_payment_courses WHERE fee_payment_id = ?");
-            pst.setInt(1, paymentId);
-            pst.executeUpdate();
+            // PreparedStatement pst = con.prepareStatement(
+            //     "DELETE FROM fee_payment_courses WHERE fee_payment_id = ?");
+            // pst.setInt(1, paymentId);
+            // pst.executeUpdate();
 
-            // delete main payment record
-            pst = con.prepareStatement(
-                "DELETE FROM fee_payments WHERE id = ?");
-            pst.setInt(1, paymentId);
-            pst.executeUpdate();
+            // // delete main payment record
+            // pst = con.prepareStatement(
+            //     "DELETE FROM fee_payments WHERE id = ?");
+            // pst.setInt(1, paymentId);
+            // pst.executeUpdate();
 
+        //     JOptionPane.showMessageDialog(this,
+        //         "Payment record cancelled successfully.\n" +
+        //         "Enrollment records are unchanged.");
+
+        //     loadReceiptTable(null);
+        //     populateFilterDropdown();
+        //     onStudentSelected();
+
+        // } catch (Exception ex) {
+        //     ex.printStackTrace();
+        //     JOptionPane.showMessageDialog(this,
+        //         "Error: " + ex.getMessage());
+        // }
+
+        try {
+
+            paymentRepository.deletePayment(paymentId);
+        
             JOptionPane.showMessageDialog(this,
                 "Payment record cancelled successfully.\n" +
                 "Enrollment records are unchanged.");
-
+        
             loadReceiptTable(null);
             populateFilterDropdown();
             onStudentSelected();
-
+        
         } catch (Exception ex) {
             ex.printStackTrace();
+        
             JOptionPane.showMessageDialog(this,
                 "Error: " + ex.getMessage());
         }
+
     }
     
     // ─────────────────────────────────────────

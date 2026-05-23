@@ -7,6 +7,7 @@ C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\components\ModernRad
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\components\ModernScrollPane.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\components\ModernTable.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\components\ModernTextField.java
+C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\constants\UIConstants.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\db\DBConnection.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\CourseForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\TeacherForm.java
@@ -20,6 +21,8 @@ C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\models\Payment.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\models\Student.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\models\Teacher.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\repositories\CourseRepository.java
+C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\repositories\EnrollmentRepository.java
+C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\repositories\PaymentRepository.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\repositories\StudentRepository.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\repositories\TeacherRepository.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\services\CourseService.java
