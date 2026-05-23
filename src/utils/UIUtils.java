@@ -1,5 +1,6 @@
 package src.utils;
 
+import src.components.ModernButton;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -37,18 +38,18 @@ public class UIUtils {
 
     public static JButton colorButton(
             String text,
-            Color bg,
+            Color color,
             int x,
             int y,
             int width,
             int height
     ) {
 
-        JButton button = new JButton(text);
+        JButton button = new ModernButton(text, color);
 
         button.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-        button.setBackground(bg);
+        button.setBackground(color);
 
         button.setForeground(Color.WHITE);
 
