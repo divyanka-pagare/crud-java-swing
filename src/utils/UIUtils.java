@@ -162,6 +162,9 @@ public class UIUtils {
         table.setIntercellSpacing(new Dimension(0, 1));
         table.setFillsViewportHeight(true);
 
+        // KEY CHANGE: use ALL_COLUMNS so table fills container width
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        
         JTableHeader header = table.getTableHeader();
         header.setFont(FONT_HEADER);
         header.setBackground(BG_HEADER);
@@ -181,7 +184,15 @@ public class UIUtils {
 
     // ===== RESIZE COLUMNS TO CONTENT =====
     public static void resizeColumns(JTable table) {
+
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
         TableColumnModel cm = table.getColumnModel();
+
+        int totalWidth = 0;
+
+        int[] widths = new int[table.getColumnCount()];
+
         for (int col = 0; col < table.getColumnCount(); col++) {
 
             int width = 60;
@@ -199,10 +210,38 @@ public class UIUtils {
                 Component c = table.prepareRenderer(r, row, col);
                 width = Math.max(width, c.getPreferredSize().width + 24);
             }
+            
+            widths[col] = width;
+            totalWidth += width;
 
-            cm.getColumn(col).setPreferredWidth(Math.min(width, 300));
+        }
+
+        // get available table width
+        int available = table.getParent() != null
+            ? table.getParent().getWidth()
+            : table.getWidth();
+
+        if (available <= 0) available = totalWidth;
+
+        // if content fits in available width — stretch to fill
+        // if content is wider than available — use content width with scroll
+        if (totalWidth <= available) {
+            // distribute extra space proportionally
+            int extra = available - totalWidth;
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                int bonus = (int)((double) widths[col] / totalWidth * extra);
+                cm.getColumn(col).setPreferredWidth(widths[col] + bonus);
+            }
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        } else {
+            // content too wide — keep content widths, allow scroll
+            for (int col = 0; col < table.getColumnCount(); col++) {
+                cm.getColumn(col).setPreferredWidth(widths[col]);
+            }
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
     }
+    
 
     // ===== ZEBRA TABLE =====
     public static JTable zebraTable(DefaultTableModel model) {
