@@ -86,7 +86,7 @@ public class TeacherForm extends JFrame {
 
         table = TableUtils.createStyledTable(model);
 
-        JScrollPane scroll = new JScrollPane(table);
+        JScrollPane scroll = UIUtils.scrollPane(table, 30, 328, 950, 250);
         scroll.setBounds(30, 328, 950, 250);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         main.add(scroll);

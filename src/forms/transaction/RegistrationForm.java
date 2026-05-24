@@ -196,19 +196,15 @@ public class RegistrationForm extends JFrame {
         rightR.setHorizontalAlignment(JLabel.RIGHT);
         table.getColumnModel().getColumn(7).setCellRenderer(rightR);
 
-        JScrollPane tableScroll = new JScrollPane(table);
+        JScrollPane tableScroll = UIUtils.scrollPane(table, 600, 70, 650, 500);
         tableScroll.setBorder(
             BorderFactory.createLineBorder(
-                    new Color(220,220,220),
-                    1
-            )
-        );
+                    new Color(220,220,220),1));
     
         tableScroll.getViewport().setBackground(Color.WHITE);
 
         tableScroll.setBounds(600, 70, 650, 500);
-        tableScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        tableScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+       
         panel.add(tableScroll);
 
         // ===== Button Actions =====

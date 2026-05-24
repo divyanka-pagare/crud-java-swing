@@ -6,6 +6,7 @@ import src.db.DBConnection;
 import src.models.Course;
 import src.models.Student;
 import src.utils.UIUtils;
+import src.utils.TableUtils;
 import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.FeesReceiptForm;
 
@@ -278,16 +279,7 @@ public class CourseSelectionForm extends JFrame {
         
         // ===== SCROLL PANE =====
         
-        JScrollPane tableScroll = new JScrollPane(enrollmentTable);
-        
-        tableScroll.setBounds(490, 98, 740, 400);
-        
-        tableScroll.setVerticalScrollBarPolicy(
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
-        tableScroll.setHorizontalScrollBarPolicy(
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        
+        JScrollPane tableScroll = UIUtils.scrollPane(enrollmentTable, 490, 98, 740, 400);
         main.add(tableScroll);
 
         // Delete selected enrollment button
@@ -318,7 +310,7 @@ public class CourseSelectionForm extends JFrame {
             UIUtils.openFullScreen(new RegistrationForm());
         });
         feesBtn.addActionListener(e ->
-            UIUtils.openFullScreen(new FeesReceiptForm()));
+            UIUtils.openFullScreen(new FeesReceiptForm())); 
 
         btnRefresh.addActionListener(e -> {
             String filter = filterDropdown.getSelectedItem().toString();

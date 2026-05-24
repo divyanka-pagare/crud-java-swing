@@ -214,8 +214,7 @@ public class FeesReceiptForm extends JFrame {
 
         TableUtils.styleTable(courseTable);
 
-        JScrollPane courseScroll = new JScrollPane(courseTable);
-        courseScroll.setBounds(30, 230, 430, 150);
+        JScrollPane courseScroll = UIUtils.scrollPane(courseTable, 30, 230, 430, 150);
         courseScroll.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(220,220,220)),
             BorderFactory.createEmptyBorder(5,5,5,5)
@@ -367,14 +366,7 @@ public class FeesReceiptForm extends JFrame {
 
         receiptTable = TableUtils.createStyledTable(receiptTableModel);
 
-        JScrollPane tableScroll = new JScrollPane(
-            receiptTable,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-        );
-        tableScroll.setBounds(500, 98, 730, 450);
-        tableScroll.setVerticalScrollBarPolicy(
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollPane tableScroll = UIUtils.scrollPane(receiptTable,500, 98, 730, 450);
 
         tableScroll.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(220,220,220)),

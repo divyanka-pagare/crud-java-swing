@@ -104,9 +104,7 @@ public class CourseForm extends JFrame {
     
         table = TableUtils.createStyledTable(model);
     
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setVerticalScrollBarPolicy(
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollPane scroll = UIUtils.scrollPane(table, 20, 20, 760, 560);
     
         rightPanel.add(scroll, BorderLayout.CENTER);
     
