@@ -12,6 +12,10 @@
 
 
 
+## Fees Receipt and Payment
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/4dd0fdbd-dc18-4d32-ac46-6cbdb2852593" />
+
 ## Filter Enrollments By Student Name
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8a886686-af81-4822-b295-50d59c7a1a46" />
