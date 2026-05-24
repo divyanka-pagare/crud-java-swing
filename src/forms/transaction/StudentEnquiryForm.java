@@ -93,10 +93,9 @@ public class StudentEnquiryForm extends JFrame {
 
         resultsTable = TableUtils.createStyledTable(resultsModel);
 
-        JScrollPane resultsScroll = new JScrollPane(resultsTable);
-        resultsScroll.setBounds(30, 135, 700, 150);
-        resultsScroll.setBorder(
-            BorderFactory.createLineBorder(new Color(210,215,220)));
+        JScrollPane resultsScroll = UIUtils.scrollPane(resultsTable, 30, 135, 700, 150);
+        // resultsScroll.setBorder(
+        //     BorderFactory.createLineBorder(new Color(210,215,220)));
         main.add(resultsScroll);
 
         // ── Student Detail Card ──
@@ -154,10 +153,11 @@ public class StudentEnquiryForm extends JFrame {
 
         courseTable = TableUtils.createStyledTable(courseModel);
 
-        JScrollPane courseScroll = new JScrollPane(courseTable);
-        courseScroll.setBounds(30, 530, 700, 140);
-        courseScroll.setBorder(
-            BorderFactory.createLineBorder(new Color(210,215,220)));
+        JScrollPane courseScroll = UIUtils.scrollPane(courseTable, 30, 530, 700, 140);
+    
+        // courseScroll.setBorder(
+        //     BorderFactory.createLineBorder(new Color(210,215,220)));
+        
         main.add(courseScroll);
 
         // ── RIGHT SIDE: Payment Summary ──
@@ -174,12 +174,10 @@ public class StudentEnquiryForm extends JFrame {
 
         paymentTable = TableUtils.createStyledTable(paymentModel);
 
-        JScrollPane paymentScroll = new JScrollPane(paymentTable);
-        paymentScroll.setBounds(750, 135, 310, 535);
-        paymentScroll.setVerticalScrollBarPolicy(
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        paymentScroll.setBorder(
-            BorderFactory.createLineBorder(new Color(210,215,220)));
+        JScrollPane paymentScroll = UIUtils.scrollPane(paymentTable, 750, 135, 310, 535);
+    
+        // paymentScroll.setBorder(
+        //     BorderFactory.createLineBorder(new Color(210,215,220)));
         main.add(paymentScroll);
 
         add(main);
