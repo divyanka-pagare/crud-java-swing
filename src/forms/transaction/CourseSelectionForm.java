@@ -331,27 +331,49 @@ public class CourseSelectionForm extends JFrame {
     // ─────────────────────────────────────────
     //  LOAD STUDENTS
     // ─────────────────────────────────────────
-    public void loadStudents() {
-        studentDropdown.removeAllItems();
 
-        studentDropdown.addItem(null); // default empty option
+    private boolean isLoadingStudents = false;
+    public void loadStudents() {
+
+        isLoadingStudents = true;
+    
+        studentDropdown.removeAllItems();
+    
+        studentDropdown.addItem(null);
+    
         try {
+    
             pst = con.prepareStatement(
                 "SELECT id,name,email,phone,gender,skills," +
                 "country,age,address,bio FROM students ORDER BY name");
+    
             rs = pst.executeQuery();
+    
             while (rs.next()) {
+    
                 studentDropdown.addItem(new Student(
-                    rs.getInt("id"),       rs.getString("name"),
-                    rs.getString("email"), rs.getString("phone"),
-                    rs.getString("gender"),rs.getString("skills"),
-                    rs.getString("country"),rs.getInt("age"),
-                    rs.getString("address"),rs.getString("bio")
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getString("gender"),
+                    rs.getString("skills"),
+                    rs.getString("country"),
+                    rs.getInt("age"),
+                    rs.getString("address"),
+                    rs.getString("bio")
                 ));
             }
-        } catch (Exception ex) { ex.printStackTrace(); }
+    
+        } catch (Exception ex) {
+    
+            ex.printStackTrace();
+    
+        } finally {
+    
+            isLoadingStudents = false;
+        }
     }
-
     // ─────────────────────────────────────────
     //  ON STUDENT SELECTED → update info panel
     // ─────────────────────────────────────────
@@ -553,7 +575,7 @@ public class CourseSelectionForm extends JFrame {
     
             loadEnrollmentTable(null);
             populateFilterDropdown();
-            onStudentSelected(); // this clears checkboxes — but we already saved courses above
+            
     
             int choice = JOptionPane.showConfirmDialog(this,
                 msg + "\n\n" +

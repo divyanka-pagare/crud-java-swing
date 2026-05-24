@@ -368,10 +368,10 @@ public class FeesReceiptForm extends JFrame {
 
         JScrollPane tableScroll = UIUtils.scrollPane(receiptTable,500, 98, 730, 450);
 
-        tableScroll.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(220,220,220)),
-            BorderFactory.createEmptyBorder(5,5,5,5)
-        ));
+        // tableScroll.setBorder(BorderFactory.createCompoundBorder(
+        //     BorderFactory.createLineBorder(new Color(220,220,220)),
+        //     BorderFactory.createEmptyBorder(5,5,5,5)
+        // ));
 
         main.add(tableScroll);
     }
@@ -439,26 +439,32 @@ public class FeesReceiptForm extends JFrame {
         double total = 0.0;
         int    count = 0;
 
+        courseTableModel.setRowCount(0);
+
         try {
-            
+        
             ResultSet rs =
                 enrollmentRepository.getUnpaidCourses(
                     s,
                     filteredCourseIds
-        );
-
+                );
+        
             while (rs.next()) {
                 double fee = rs.getDouble("fees");
+        
                 courseTableModel.addRow(new Object[]{
                     rs.getString("course_name"),
                     rs.getString("duration"),
                     String.format("₹ %,.2f", fee)
                 });
+        
                 total += fee;
                 count++;
             }
-
-        } catch (Exception ex) { ex.printStackTrace(); }
+        
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         if (count == 0) {
             lblCourseFees.setText("₹ 0.00");
@@ -630,28 +636,7 @@ public class FeesReceiptForm extends JFrame {
         try {
 
             ResultSet rs = paymentRepository.getAllReceipts(nameFilter);
-            // String q =
-            //     "SELECT fp.id, s.name, " +
-            //     "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
-            //     "fp.total_fees, fp.discount_amt, " +
-            //     "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
-            //     "FROM fee_payments fp " +
-            //     "JOIN students s ON fp.student_id = s.id " +
-            //     "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
-            //     "LEFT JOIN courses c ON fpc.course_id = c.id ";
-
-            // if (nameFilter != null && !nameFilter.isBlank())
-            //     q += "WHERE s.name=? ";
-
-            // q += "GROUP BY fp.id, s.name, fp.total_fees, fp.discount_amt, " +
-            //      "fp.amount_paid, fp.payment_mode, fp.payment_status, fp.paid_at " +
-            //      "ORDER BY fp.paid_at DESC";
-
-            // PreparedStatement pst = con.prepareStatement(q);
-            // if (nameFilter != null && !nameFilter.isBlank())
-            //     pst.setString(1, nameFilter);
-
-            // ResultSet rs = pst.executeQuery();
+           
             while (rs.next()) {
                 Timestamp ts = rs.getTimestamp("paid_at");
                 String date  = ts != null

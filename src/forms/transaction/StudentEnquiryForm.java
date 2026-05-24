@@ -41,7 +41,6 @@ public class StudentEnquiryForm extends JFrame {
 
         setTitle("Student Enquiry");
         setSize(1100, 720);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -77,6 +76,7 @@ public class StudentEnquiryForm extends JFrame {
             new Color(0, 120, 215), 515, 65, 100, 32);
         clearBtn  = UIUtils.colorButton("CLEAR",
             new Color(108, 117, 125), 625, 65, 100, 32);
+
         main.add(searchBtn);
         main.add(clearBtn);
 
@@ -162,7 +162,7 @@ public class StudentEnquiryForm extends JFrame {
 
         // ── RIGHT SIDE: Payment Summary ──
         JLabel lPayment = UIUtils.bold("Payment History:", 13);
-        lPayment.setBounds(750, 108, 300, 25);
+        lPayment.setBounds(750, 35, 300, 25);
         main.add(lPayment);
 
         String[] pCols = {
@@ -174,7 +174,7 @@ public class StudentEnquiryForm extends JFrame {
 
         paymentTable = TableUtils.createStyledTable(paymentModel);
 
-        JScrollPane paymentScroll = UIUtils.scrollPane(paymentTable, 750, 135, 310, 535);
+        JScrollPane paymentScroll = UIUtils.scrollPane(paymentTable, 750, 62, 500, 610);
     
         // paymentScroll.setBorder(
         //     BorderFactory.createLineBorder(new Color(210,215,220)));
