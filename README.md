@@ -4,10 +4,9 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/f379d49b-08f8-48ac-a287-0bd80eaaf0b3" />
 
-<img width="1919" height="1079" alt="Screenshot 2026-05-17 104701" src="https://github.com/user-attachments/assets/5236fe22-4f0f-4653-adaf-ad0b2ed72324" />
 
-## student registration form 
-<img width="1919" height="1079" alt="Screenshot 2026-05-18 223910" src="https://github.com/user-attachments/assets/2e9f6e55-3182-4028-9eca-ab67f8500937" />
+## Student Registration Form
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0dea026e-63e8-4215-9300-f8cfd4723acd" />
 
 ## Course Selection Form 
 
