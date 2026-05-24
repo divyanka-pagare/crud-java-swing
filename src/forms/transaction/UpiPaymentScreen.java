@@ -2,6 +2,7 @@ package src.forms.transaction;
 
 import src.models.Student;
 import src.services.PaymentService;
+import src.utils.UIUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -297,6 +298,7 @@ public class UpiPaymentScreen extends JFrame {
         goBackBtn.addActionListener(e -> {
             stopCountdown();
             dispose();
+            UIUtils.openFullScreen(parentForm);
             parentForm.setVisible(true);
             parentForm.loadReceiptTable(null);
             parentForm.populateFilterDropdown();

@@ -4,6 +4,9 @@ import src.db.DBConnection;
 import src.components.ModernButton;
 import src.components.ModernTable;
 
+import src.utils.UIUtils;
+import src.forms.transaction.CourseSelectionForm;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -40,7 +43,7 @@ public class RegistrationForm extends JFrame {
 
         setTitle("Registration Form - CRUD Operations");
         setSize(1300, 725);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
         setDefaultCloseOperation(DISPOSE_ON_CLOSE); // changed from EXIT so Main stays alive
         setLocationRelativeTo(null);
 
@@ -223,7 +226,7 @@ public class RegistrationForm extends JFrame {
         panel.add(courseBtn);
 
         courseBtn.addActionListener(e -> {
-            new src.forms.transaction.CourseSelectionForm();
+            UIUtils.openFullScreen(new CourseSelectionForm());
         });
 
         

@@ -2,8 +2,13 @@ package src.forms.transaction;
 
 
 import src.db.DBConnection;
+
 import src.models.Course;
 import src.models.Student;
+import src.utils.UIUtils;
+import src.forms.transaction.RegistrationForm;
+import src.forms.transaction.FeesReceiptForm;
+
 import src.components.ModernButton;
 
 import javax.swing.*;
@@ -275,7 +280,7 @@ public class CourseSelectionForm extends JFrame {
         
         JScrollPane tableScroll = new JScrollPane(enrollmentTable);
         
-        tableScroll.setBounds(490, 98, 620, 400);
+        tableScroll.setBounds(490, 98, 740, 400);
         
         tableScroll.setVerticalScrollBarPolicy(
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -309,8 +314,11 @@ public class CourseSelectionForm extends JFrame {
 
         enrollBtn.addActionListener(e -> enrollStudent());
         clearBtn .addActionListener(e -> clearForm());
-        backBtn.addActionListener(e -> {new src.forms.transaction.RegistrationForm();});
-        feesBtn.addActionListener(e -> new src.forms.transaction.FeesReceiptForm());
+        backBtn.addActionListener(e -> {
+            UIUtils.openFullScreen(new RegistrationForm());
+        });
+        feesBtn.addActionListener(e ->
+            UIUtils.openFullScreen(new FeesReceiptForm()));
 
         btnRefresh.addActionListener(e -> {
             String filter = filterDropdown.getSelectedItem().toString();

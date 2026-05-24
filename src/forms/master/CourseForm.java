@@ -26,87 +26,130 @@ public class CourseForm extends JFrame {
 
     Connection        con;
     CourseRepository  repo;
-
+    
     public CourseForm() {
 
         setTitle("Course Master");
         setSize(1200, 720);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-
-        con  = DBConnection.getConnection();
+    
+        con = DBConnection.getConnection();
         repo = new CourseRepository(con);
-
-        JPanel main = new JPanel(null);
+    
+        JPanel main = new JPanel(new BorderLayout(20, 20));
+        main.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         main.setBackground(new Color(245, 247, 250));
-
-        // ── Title ──
-        JLabel title = UIUtils.bold("Course Master", 26);
-        title.setBounds(30, 12, 400, 40);
-        main.add(title);
-
-        // ── Form ──
-        addLabel(main, "Course Name*:", 30, 68);
-        addLabel(main, "Duration*:",    30, 118);
-        addLabel(main, "Fees (₹)*:",    30, 168);
-
-        txtName     = field(180, 68);
-        txtDuration = field(180, 118);
-        txtFees     = field(180, 168);
-
-        main.add(txtName);
-        main.add(txtDuration);
-        main.add(txtFees);
-
-        // ── Buttons ──
-        addBtn    = UIUtils.colorButton("ADD",    new Color(0,120,215),   30, 230, 110, 38);
-        updateBtn = UIUtils.colorButton("UPDATE", new Color(40,167,69),  155, 230, 110, 38);
-        deleteBtn = UIUtils.colorButton("DELETE", new Color(220,53,69),  280, 230, 110, 38);
-        clearBtn  = UIUtils.colorButton("CLEAR",  new Color(108,117,125),405, 230, 110, 38);
-
-        main.add(addBtn);
-        main.add(updateBtn);
-        main.add(deleteBtn);
-        main.add(clearBtn);
-
-        // ── Table ──
+    
+        // ================= LEFT PANEL =================
+    
+        JPanel leftPanel = new JPanel(null);
+        leftPanel.setPreferredSize(new Dimension(420, 600));
+        leftPanel.setBackground(new Color(245, 247, 250));
+    
+        JLabel title = UIUtils.bold("Course Master", 28);
+        title.setBounds(20, 10, 300, 40);
+        leftPanel.add(title);
+    
+        addLabel(leftPanel, "Course Name*:", 20, 80);
+        addLabel(leftPanel, "Duration*:", 20, 145);
+        addLabel(leftPanel, "Fees (₹)*:", 20, 210);
+    
+        txtName = field(20, 110);
+        txtDuration = field(20, 175);
+        txtFees = field(20, 240);
+    
+        leftPanel.add(txtName);
+        leftPanel.add(txtDuration);
+        leftPanel.add(txtFees);
+    
+        addBtn = UIUtils.colorButton(
+                "ADD",
+                new Color(0, 120, 215),
+                20, 320, 150, 42);
+    
+        updateBtn = UIUtils.colorButton(
+                "UPDATE",
+                new Color(40, 167, 69),
+                190, 320, 150, 42);
+    
+        deleteBtn = UIUtils.colorButton(
+                "DELETE",
+                new Color(220, 53, 69),
+                20, 385, 150, 42);
+    
+        clearBtn = UIUtils.colorButton(
+                "CLEAR",
+                new Color(108, 117, 125),
+                190, 385, 150, 42);
+    
+        leftPanel.add(addBtn);
+        leftPanel.add(updateBtn);
+        leftPanel.add(deleteBtn);
+        leftPanel.add(clearBtn);
+    
+        // ================= RIGHT PANEL =================
+    
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBackground(Color.WHITE);
+    
         String[] cols = {"ID", "Course Name", "Duration", "Fees (₹)"};
+    
         model = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
         };
-
+    
         table = TableUtils.createStyledTable(model);
-
+    
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setBounds(30, 290, 820, 260);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        
-        main.add(scroll);
-
+        scroll.setVerticalScrollBarPolicy(
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    
+        rightPanel.add(scroll, BorderLayout.CENTER);
+    
+        // ================= MAIN =================
+    
+        main.add(leftPanel, BorderLayout.WEST);
+        main.add(rightPanel, BorderLayout.CENTER);
+    
         add(main);
-
+    
         loadTable();
 
-        // ── Listeners ──
-        addBtn   .addActionListener(e -> addCourse());
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+    
+        // ================= LISTENERS =================
+    
+        addBtn.addActionListener(e -> addCourse());
         updateBtn.addActionListener(e -> updateCourse());
         deleteBtn.addActionListener(e -> deleteCourse());
-        clearBtn .addActionListener(e -> clearForm());
-
+        clearBtn.addActionListener(e -> clearForm());
+    
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent e) {
+    
                 selectedRow = table.getSelectedRow();
-                txtName    .setText(model.getValueAt(selectedRow, 1).toString());
-                txtDuration.setText(model.getValueAt(selectedRow, 2).toString());
-                txtFees    .setText(model.getValueAt(selectedRow, 3).toString()
-                    .replace("₹","").replace(",","").trim());
+    
+                txtName.setText(model.getValueAt(selectedRow, 1).toString());
+    
+                txtDuration.setText(
+                        model.getValueAt(selectedRow, 2).toString());
+    
+                txtFees.setText(
+                        model.getValueAt(selectedRow, 3)
+                                .toString()
+                                .replace("₹", "")
+                                .replace(",", "")
+                                .trim());
             }
         });
-
+    
         setVisible(true);
-    }
-
+    } 
+    
     private void addCourse() {
         String name     = txtName.getText().trim();
         String duration = txtDuration.getText().trim();
@@ -186,7 +229,6 @@ public class CourseForm extends JFrame {
                     String.format("₹ %,.2f", c.getFees())
                 });
             }
-            TableUtils.resizeColumnWidth(table);
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 

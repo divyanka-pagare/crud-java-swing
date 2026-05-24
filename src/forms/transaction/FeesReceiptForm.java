@@ -372,7 +372,7 @@ public class FeesReceiptForm extends JFrame {
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
         );
-        tableScroll.setBounds(500, 98, 660, 450);
+        tableScroll.setBounds(500, 98, 730, 450);
         tableScroll.setVerticalScrollBarPolicy(
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -389,7 +389,11 @@ public class FeesReceiptForm extends JFrame {
         payBtn     .addActionListener(e -> payFees());
         downloadBtn.addActionListener(e -> downloadReceipt());
         clearBtn   .addActionListener(e -> clearForm());
-        backBtn.addActionListener(e -> {new src.forms.transaction.CourseSelectionForm(); dispose();});
+        
+        backBtn.addActionListener(e -> {
+            UIUtils.openFullScreen(new CourseSelectionForm()); 
+            dispose();
+        });
 
         cancelEnrollBtn.addActionListener(e -> cancelEnrollment());
 
@@ -448,7 +452,7 @@ public class FeesReceiptForm extends JFrame {
             ResultSet rs =
                 enrollmentRepository.getUnpaidCourses(
                     s,
-                filteredCourseIds
+                    filteredCourseIds
         );
 
             while (rs.next()) {

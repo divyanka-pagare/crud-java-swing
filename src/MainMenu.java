@@ -6,6 +6,7 @@ import src.forms.transaction.CourseSelectionForm;
 import src.forms.transaction.FeesReceiptForm;
 import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.StudentEnquiryForm;
+import src.utils.UIUtils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -35,16 +36,16 @@ public class MainMenu extends JFrame {
 
         // MASTER
         JMenu master = createMenu("Master");
-        master.add(createMenuItem("Course", () -> new CourseForm()));
-        master.add(createMenuItem("Teacher", () -> new TeacherForm()));
+        master.add(createMenuItem("Course", () -> UIUtils.openFullScreen(new CourseForm())));
+        master.add(createMenuItem("Teacher", () -> UIUtils.openFullScreen(new TeacherForm())));
         menuBar.add(master);
 
         // TRANSACTION
         JMenu transaction = createMenu("Transaction");
-        transaction.add(createMenuItem("Student Registration", () -> new RegistrationForm()));
-        transaction.add(createMenuItem("Course Enrollment", () -> new CourseSelectionForm()));
-        transaction.add(createMenuItem("Fees Receipt", () -> new FeesReceiptForm()));
-        transaction.add(createMenuItem("Student Enquiry", () -> new StudentEnquiryForm()));
+        transaction.add(createMenuItem("Student Registration",  () -> UIUtils.openFullScreen(new RegistrationForm())));
+        transaction.add(createMenuItem("Course Enrollment",     () -> UIUtils.openFullScreen(new CourseSelectionForm())));
+        transaction.add(createMenuItem("Fees Receipt",          () -> UIUtils.openFullScreen(new FeesReceiptForm())));
+        transaction.add(createMenuItem("Student Enquiry",       () -> UIUtils.openFullScreen(new StudentEnquiryForm())));
         menuBar.add(transaction);
 
         // REPORT
