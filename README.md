@@ -1,18 +1,32 @@
 # Registration-form-java-swing
 
-<img width="1919" height="1079" alt="Screenshot 2026-05-17 104701" src="https://github.com/user-attachments/assets/5236fe22-4f0f-4653-adaf-ad0b2ed72324" />
+## Main Menu
 
-## student registration form 
-<img width="1919" height="1079" alt="Screenshot 2026-05-18 223910" src="https://github.com/user-attachments/assets/2e9f6e55-3182-4028-9eca-ab67f8500937" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/f379d49b-08f8-48ac-a287-0bd80eaaf0b3" />
+
+
+## Student Registration Form
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0dea026e-63e8-4215-9300-f8cfd4723acd" />
+
 
 ## Course Selection Form 
 
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/21c2b4e9-17e0-4ac0-a1d3-f85c8d1752d7" />
 
 
-## Filter Enrollments By Student Name
+## Fees Receipt and Payment
 
-<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/8a886686-af81-4822-b295-50d59c7a1a46" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/4dd0fdbd-dc18-4d32-ac46-6cbdb2852593" />
 
-## Download Fees Receipt - PDF Format 
+## Course Master
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/9c13dcb9-0cd4-4755-b8f8-59accad30e22" />
+
+
+## Teacher Master
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/16d7c817-0ecc-4c73-accf-254054d92c41" />
+
 
 
