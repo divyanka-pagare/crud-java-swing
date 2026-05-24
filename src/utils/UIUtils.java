@@ -164,7 +164,7 @@ public class UIUtils {
 
         // KEY CHANGE: use ALL_COLUMNS so table fills container width
         table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        
+
         JTableHeader header = table.getTableHeader();
         header.setFont(FONT_HEADER);
         header.setBackground(BG_HEADER);
@@ -268,7 +268,7 @@ public class UIUtils {
     public static JScrollPane scrollPane(JTable table,
                                           int x, int y, int w, int h) {
         JScrollPane sp = new JScrollPane(table,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
             JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         sp.setBounds(x, y, w, h);
         sp.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
