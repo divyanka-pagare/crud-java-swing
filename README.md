@@ -19,6 +19,11 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/4dd0fdbd-dc18-4d32-ac46-6cbdb2852593" />
 
+## Student Enquiry
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/fdf2c02e-b4ff-43ae-ac61-80048d87cd0d" />
+
+
 ## Course Master
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/9c13dcb9-0cd4-4755-b8f8-59accad30e22" />
