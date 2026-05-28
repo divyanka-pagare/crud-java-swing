@@ -6,6 +6,8 @@ import src.forms.transaction.CourseSelectionForm;
 import src.forms.transaction.FeesReceiptForm;
 import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.StudentEnquiryForm;
+import src.forms.report.FeesCollectionReport;
+
 import src.utils.UIUtils;
 
 import javax.swing.*;
@@ -50,8 +52,8 @@ public class MainMenu extends JFrame {
 
         // REPORT
         JMenu report = createMenu("Report");
-        report.add(createMenuItem("Coming Soon",
-                () -> JOptionPane.showMessageDialog(this, "Reports Coming Soon")));
+        report.add(createMenuItem("Fees Collection Report",
+                () -> UIUtils.openFullScreen(new FeesCollectionReport())));
         menuBar.add(report);
 
         // SETTINGS

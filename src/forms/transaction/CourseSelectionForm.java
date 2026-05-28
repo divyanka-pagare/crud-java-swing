@@ -6,9 +6,6 @@ import src.db.DBConnection;
 import src.models.Course;
 import src.models.Student;
 import src.utils.UIUtils;
-import src.utils.TableUtils;
-import src.forms.transaction.RegistrationForm;
-import src.forms.transaction.FeesReceiptForm;
 
 import src.components.ModernButton;
 

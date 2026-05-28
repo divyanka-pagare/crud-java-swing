@@ -11,6 +11,7 @@ C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\constants\UIConstant
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\db\DBConnection.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\CourseForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\TeacherForm.java
+C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\report\FeesCollectionReport.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\transaction\CourseSelectionForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\transaction\FeesReceiptForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\transaction\RegistrationForm.java
