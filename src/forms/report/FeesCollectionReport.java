@@ -5,12 +5,16 @@ import src.utils.TableUtils;
 import src.utils.UIUtils;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 // import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
+
+// import java.util.HashMap;
+// import java.util.Map;
 
 public class FeesCollectionReport extends JFrame {
 
@@ -30,10 +34,40 @@ public class FeesCollectionReport extends JFrame {
     JPanel            courseWisePanel;
     JComboBox<String> courseBox;
 
+    JScrollPane reportScroll;
+
+    // ===== COURSE ANALYSIS PANEL =====
+    JPanel  courseAnalysisPanel;
+    JLabel  lblCourseStudents, lblCourseRevenue,
+            lblTotalRevenue,   lblCoursePercent,
+            lblCoursePercentBar;
+
     // ===== SUMMARY CARDS =====
     JLabel lblTotalCollection, lblTotalStudents,
            lblTotalCourses,    lblTotalPayments;
 
+    // ===== ANALYTICS PANELS =====
+    JPanel analyticsPanel;
+    
+    // ===== INSIGHT LABELS =====
+    JLabel lblHighestDay;
+    JLabel lblAverageDay;
+    JLabel lblPendingPayments;
+    JLabel lblTopCourse;
+    
+    // ===== STUDENT SUMMARY =====
+    JPanel studentSummaryPanel;
+    
+    JLabel lblStudentTotalPaid;
+    JLabel lblStudentTotalDiscount;
+    JLabel lblStudentPending;
+    JLabel lblStudentLastPayment;
+    
+    // ===== COURSE EXTRA ANALYTICS =====
+    JLabel lblAverageRevenuePerStudent;
+    JLabel lblTopPaymentMode;
+    
+           
     // ===== MAIN REPORT TABLE =====
     JTable            reportTable;
     DefaultTableModel reportModel;
@@ -195,6 +229,179 @@ public class FeesCollectionReport extends JFrame {
             "Total Transactions", "0",
             new Color(220, 53, 69), 855, 145);
 
+        // ==========================================================
+        // ANALYTICS PANEL
+        // ==========================================================
+        
+        analyticsPanel = new JPanel(null);
+        analyticsPanel.setBackground(Color.WHITE);
+        analyticsPanel.setBorder(BorderFactory.createLineBorder(
+                new Color(210,215,220)));
+        
+        analyticsPanel.setBounds(30, 240, 1120, 180);
+        
+        main.add(analyticsPanel);
+        
+
+        // ==========================================================
+        // STUDENT SUMMARY PANEL
+        // ==========================================================
+
+        studentSummaryPanel = new JPanel(null);
+
+        studentSummaryPanel.setBackground(Color.WHITE);
+
+        studentSummaryPanel.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(
+                                new Color(210,215,220)
+                        ),
+                        "Student Financial Summary"
+                )
+        );
+
+        studentSummaryPanel.setBounds(
+                30,
+                340,
+                1120,
+                100
+        );
+
+        studentSummaryPanel.setVisible(false);
+
+        main.add(studentSummaryPanel);
+
+        lblStudentTotalPaid = summaryText(
+                studentSummaryPanel,
+                "Total Paid",
+                "₹ 0",
+                20
+        );
+
+        lblStudentTotalDiscount = summaryText(
+                studentSummaryPanel,
+                "Discount",
+                "₹ 0",
+                300
+        );
+
+        lblStudentPending = summaryText(
+                studentSummaryPanel,
+                "Pending",
+                "₹ 0",
+                580
+        );
+
+        lblStudentLastPayment = summaryText(
+                studentSummaryPanel,
+                "Last Payment",
+                "-",
+                860
+        );
+        // ─────────────────────────────────────────
+        // INSIGHT CARDS
+        // ─────────────────────────────────────────
+        
+        lblHighestDay = createAnalyticsCard(
+                analyticsPanel,
+                "Highest Collection Day",
+                "₹ 0",
+                new Color(0,102,204),
+                20,
+                20
+        );
+        
+        lblAverageDay = createAnalyticsCard(
+                analyticsPanel,
+                "Average Collection",
+                "₹ 0",
+                new Color(40,167,69),
+                290,
+                20
+        );
+        
+        lblPendingPayments = createAnalyticsCard(
+                analyticsPanel,
+                "Pending Payments",
+                "0",
+                new Color(220,53,69),
+                560,
+                20
+        );
+        
+        lblTopCourse = createAnalyticsCard(
+                analyticsPanel,
+                "Top Course",
+                "-",
+                new Color(153,0,153),
+                830,
+                20
+        );
+
+        // ─────────────────────────────────────────
+        //  COURSE ANALYSIS PANEL (visible only in Course Wise)
+        // ─────────────────────────────────────────
+        courseAnalysisPanel = new JPanel(null);
+        courseAnalysisPanel.setBackground(Color.WHITE);
+        courseAnalysisPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(210, 215, 220)),
+            "Course Analysis",
+            javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Segoe UI", Font.BOLD, 12)));
+        courseAnalysisPanel.setBounds(30, 240, 1120, 110);
+        courseAnalysisPanel.setVisible(false);
+        main.add(courseAnalysisPanel);
+
+        // ── Students in course ──
+        JLabel lCS = UIUtils.plain("Students Enrolled:", 12);
+        lCS.setBounds(14, 24, 150, 20);
+        courseAnalysisPanel.add(lCS);
+        lblCourseStudents = UIUtils.bold("0", 18);
+        lblCourseStudents.setForeground(new Color(0, 102, 204));
+        lblCourseStudents.setBounds(14, 44, 150, 28);
+        courseAnalysisPanel.add(lblCourseStudents);
+
+        // ── Course revenue ──
+        JLabel lCR = UIUtils.plain("Course Revenue:", 12);
+        lCR.setBounds(200, 24, 150, 20);
+        courseAnalysisPanel.add(lCR);
+        lblCourseRevenue = UIUtils.bold("₹ 0.00", 18);
+        lblCourseRevenue.setForeground(new Color(40, 167, 69));
+        lblCourseRevenue.setBounds(200, 44, 200, 28);
+        courseAnalysisPanel.add(lblCourseRevenue);
+
+        // ── Total revenue of institute ──
+        JLabel lTR = UIUtils.plain("Total Institute Revenue:", 12);
+        lTR.setBounds(440, 24, 180, 20);
+        courseAnalysisPanel.add(lTR);
+        lblTotalRevenue = UIUtils.bold("₹ 0.00", 18);
+        lblTotalRevenue.setForeground(new Color(153, 0, 153));
+        lblTotalRevenue.setBounds(440, 44, 200, 28);
+        courseAnalysisPanel.add(lblTotalRevenue);
+
+        // ── Percentage contribution ──
+        JLabel lCP = UIUtils.plain("Contribution to Total Revenue:", 12);
+        lCP.setBounds(680, 24, 220, 20);
+        courseAnalysisPanel.add(lCP);
+        lblCoursePercent = UIUtils.bold("0.00%", 22);
+        lblCoursePercent.setForeground(new Color(220, 53, 69));
+        lblCoursePercent.setBounds(680, 44, 160, 30);
+        courseAnalysisPanel.add(lblCoursePercent);
+
+        // ── Progress bar (drawn as colored panel) ──
+        JLabel lBarBg = new JLabel();
+        lBarBg.setBackground(new Color(230, 230, 230));
+        lBarBg.setOpaque(true);
+        lBarBg.setBounds(680, 78, 400, 18);
+        courseAnalysisPanel.add(lBarBg);
+
+        lblCoursePercentBar = new JLabel();
+        lblCoursePercentBar.setBackground(new Color(220, 53, 69));
+        lblCoursePercentBar.setOpaque(true);
+        lblCoursePercentBar.setBounds(680, 78, 0, 18);
+        courseAnalysisPanel.add(lblCoursePercentBar);
+
         // ─────────────────────────────────────────
         //  REPORT TABLE
         // ─────────────────────────────────────────
@@ -206,11 +413,62 @@ public class FeesCollectionReport extends JFrame {
 
         reportTable = TableUtils.createStyledTable(reportModel);
 
-        JScrollPane scroll = UIUtils.scrollPane(
-            reportTable, 30, 240, 1120, 460);
-        main.add(scroll);
+
+        reportScroll = UIUtils.scrollPane(reportTable, 30, 240, 1120, 460);
+        main.add(reportScroll);
 
         add(main);
+
+        reportTable.setDefaultRenderer(
+        Object.class,
+        new DefaultTableCellRenderer() {
+
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column
+            ) {
+
+                Component c =
+                        super.getTableCellRendererComponent(
+                                table,
+                                value,
+                                isSelected,
+                                hasFocus,
+                                row,
+                                column
+                        );
+
+                String val =
+                        value != null
+                                ? value.toString()
+                                : "";
+
+                if(val.equalsIgnoreCase("Paid")) {
+
+                    c.setForeground(
+                            new Color(40,167,69)
+                    );
+                }
+                else if(val.equalsIgnoreCase("Pending")) {
+
+                    c.setForeground(
+                            new Color(220,53,69)
+                    );
+                }
+                else {
+
+                    c.setForeground(Color.BLACK);
+                }
+
+                return c;
+            }
+        }
+);
 
         // ── Load dropdowns ──
         loadStudentDropdown();
@@ -227,6 +485,7 @@ public class FeesCollectionReport extends JFrame {
             dateWisePanel   .setVisible(v.equals("Date Wise"));
             studentWisePanel.setVisible(v.equals("Student Wise"));
             courseWisePanel .setVisible(v.equals("Course Wise"));
+            courseAnalysisPanel .setVisible(v.equals("Course Wise"));
             updateTableColumns();
             generateReport();
         });
@@ -235,7 +494,12 @@ public class FeesCollectionReport extends JFrame {
         studentBox.addActionListener(e -> generateReport());
 
         // ── Course dropdown listener ──
-        courseBox.addActionListener(e -> generateReport());
+        courseBox.addActionListener(e -> {
+            generateReport();
+            if (viewByBox.getSelectedItem().toString().equals("Course Wise")) {
+                updateCourseAnalysis();
+            }
+        });
 
         generateReport();
         setVisible(true);
@@ -333,39 +597,173 @@ public class FeesCollectionReport extends JFrame {
         }
     }
 
+    // ==========================================================
+// ANALYTICS CARD
+// ==========================================================
+
+private JLabel createAnalyticsCard(
+        JPanel parent,
+        String title,
+        String value,
+        Color color,
+        int x,
+        int y
+) {
+
+    JPanel card = new JPanel(null);
+
+    card.setBackground(color);
+
+    card.setBounds(x, y, 240, 120);
+
+    parent.add(card);
+
+    JLabel lblTitle = new JLabel(title);
+
+    lblTitle.setForeground(Color.WHITE);
+
+    lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+
+    lblTitle.setBounds(15, 15, 200, 20);
+
+    card.add(lblTitle);
+
+    JLabel lblValue = new JLabel(value);
+
+    lblValue.setForeground(Color.WHITE);
+
+    lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
+
+    lblValue.setBounds(15, 50, 210, 35);
+
+    card.add(lblValue);
+
+    return lblValue;
+}
+
+// ==========================================================
+// SUMMARY TEXT
+// ==========================================================
+
+private JLabel summaryText(
+        JPanel panel,
+        String heading,
+        String value,
+        int x
+) {
+
+    JLabel h = new JLabel(heading);
+
+    h.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+    h.setBounds(x, 18, 180, 20);
+
+    panel.add(h);
+
+    JLabel v = new JLabel(value);
+
+    v.setFont(new Font("Segoe UI", Font.BOLD, 20));
+
+    v.setForeground(new Color(0,102,204));
+
+    v.setBounds(x, 42, 220, 30);
+
+    panel.add(v);
+
+    return v;
+}
+
+
+
     // ─────────────────────────────────────────
     //  GENERATE REPORT
     // ─────────────────────────────────────────
     public void generateReport() {
-        String view = viewByBox.getSelectedItem().toString();
-        updateTableColumns();
 
+        String view =
+                viewByBox.getSelectedItem().toString();
+    
+        boolean courseWise =
+                view.equals("Course Wise");
+    
+        reportScroll.setBounds(
+                30,
+                view.equals("Student Wise")
+                        ? 450
+                        : courseWise
+                        ? 360
+                        : 430,
+                1120,
+                view.equals("Student Wise")
+                        ? 400
+                        : courseWise
+                        ? 340
+                        : 270
+        );
+    
+        updateTableColumns();
+    
         switch (view) {
+    
             case "Date Wise":
+    
+                analyticsPanel.setVisible(true);
+                studentSummaryPanel.setVisible(false);
+    
                 loadDateWise(
-                    getSpinnerDate(spinFrom),
-                    getSpinnerDate(spinTo));
+                        getSpinnerDate(spinFrom),
+                        getSpinnerDate(spinTo)
+                );
+    
+                updateDateWiseAnalytics(
+                        getSpinnerDate(spinFrom),
+                        getSpinnerDate(spinTo)
+                );
+    
                 break;
+    
             case "Student Wise":
+    
+                analyticsPanel.setVisible(false);
+                studentSummaryPanel.setVisible(true);
+    
                 loadStudentWise(
-                    studentBox.getSelectedItem() != null
-                        ? studentBox.getSelectedItem().toString()
-                        : "",
-                    getSpinnerDate(spinStudentFrom),
-                    getSpinnerDate(spinStudentTo));
+                        studentBox.getSelectedItem() != null
+                                ? studentBox.getSelectedItem().toString()
+                                : "",
+                        getSpinnerDate(spinStudentFrom),
+                        getSpinnerDate(spinStudentTo)
+                );
+    
+                updateStudentSummary(
+                        studentBox.getSelectedItem().toString()
+                );
+    
                 break;
+    
             case "Course Wise":
+    
+                analyticsPanel.setVisible(false);
+                studentSummaryPanel.setVisible(false);
+    
                 loadCourseWise(
-                    courseBox.getSelectedItem() != null
-                        ? courseBox.getSelectedItem().toString()
-                        : "");
+                        courseBox.getSelectedItem() != null
+                                ? courseBox.getSelectedItem().toString()
+                                : ""
+                );
+    
+                updateCourseAnalysis();
+    
                 break;
         }
-
+    
         updateSummaryCards();
+    
         TableUtils.resizeColumnWidth(reportTable);
-    }
 
+        
+    }
+    
     // ─────────────────────────────────────────
     //  DATE WISE
     // ─────────────────────────────────────────
@@ -407,6 +805,129 @@ public class FeesCollectionReport extends JFrame {
             }
         } catch (Exception ex) { ex.printStackTrace(); }
     }
+
+    private void updateDateWiseAnalytics(
+        String from,
+        String to
+) {
+
+    try {
+
+        // ==================================================
+        // HIGHEST COLLECTION DAY
+        // ==================================================
+
+        pst = con.prepareStatement(
+
+                "SELECT DATE(paid_at) d, " +
+                "SUM(amount_paid) total " +
+                "FROM fee_payments " +
+                "WHERE DATE(paid_at) BETWEEN ? AND ? " +
+                "GROUP BY DATE(paid_at) " +
+                "ORDER BY total DESC " +
+                "LIMIT 1"
+        );
+
+        pst.setString(1, from);
+
+        pst.setString(2, to);
+
+        rs = pst.executeQuery();
+
+        if(rs.next()) {
+
+            lblHighestDay.setText(
+                    rs.getString("d") +
+                    " | ₹ " +
+                    String.format("%,.2f",
+                            rs.getDouble("total"))
+            );
+        }
+
+        // ==================================================
+        // AVERAGE COLLECTION
+        // ==================================================
+
+        pst = con.prepareStatement(
+
+                "SELECT AVG(day_total) avg_amt " +
+                "FROM (" +
+                "SELECT SUM(amount_paid) day_total " +
+                "FROM fee_payments " +
+                "WHERE DATE(paid_at) BETWEEN ? AND ? " +
+                "GROUP BY DATE(paid_at)" +
+                ") x"
+        );
+
+        pst.setString(1, from);
+
+        pst.setString(2, to);
+
+        rs = pst.executeQuery();
+
+        if(rs.next()) {
+
+            lblAverageDay.setText(
+                    "₹ " +
+                    String.format("%,.2f",
+                            rs.getDouble("avg_amt"))
+            );
+        }
+
+        // ==================================================
+        // PENDING PAYMENTS
+        // ==================================================
+
+        pst = con.prepareStatement(
+
+                "SELECT COUNT(*) cnt " +
+                "FROM fee_payments " +
+                "WHERE payment_status != 'Paid'"
+        );
+
+        rs = pst.executeQuery();
+
+        if(rs.next()) {
+
+            lblPendingPayments.setText(
+                    String.valueOf(rs.getInt("cnt"))
+            );
+        }
+
+        // ==================================================
+        // TOP COURSE
+        // ==================================================
+
+        pst = con.prepareStatement(
+
+                "SELECT c.course_name, " +
+                "SUM(fp.amount_paid) total " +
+                "FROM fee_payments fp " +
+                "JOIN fee_payment_courses fpc " +
+                "ON fpc.fee_payment_id = fp.id " +
+                "JOIN courses c " +
+                "ON c.id = fpc.course_id " +
+                "GROUP BY c.course_name " +
+                "ORDER BY total DESC " +
+                "LIMIT 1"
+        );
+
+        rs = pst.executeQuery();
+
+        if(rs.next()) {
+
+            lblTopCourse.setText(
+                    rs.getString("course_name")
+            );
+        }
+
+    }
+    catch(Exception ex) {
+
+        ex.printStackTrace();
+    }
+}
+
 
     // ─────────────────────────────────────────
     //  STUDENT WISE
@@ -458,6 +979,78 @@ public class FeesCollectionReport extends JFrame {
             }
         } catch (Exception ex) { ex.printStackTrace(); }
     }
+
+    
+    private void updateStudentSummary(
+        String studentName
+) {
+
+    if(studentName.equals("-- All Students --")) {
+
+        studentSummaryPanel.setVisible(false);
+
+        return;
+    }
+
+    studentSummaryPanel.setVisible(true);
+
+    try {
+
+        pst = con.prepareStatement(
+
+                "SELECT " +
+                "SUM(fp.amount_paid) paid, " +
+                "SUM(fp.discount_amt) discount, " +
+                "MAX(fp.paid_at) last_payment " +
+                "FROM fee_payments fp " +
+                "JOIN students s " +
+                "ON s.id = fp.student_id " +
+                "WHERE s.name = ?"
+        );
+
+        pst.setString(1, studentName);
+
+        rs = pst.executeQuery();
+
+        if(rs.next()) {
+
+            double paid =
+                    rs.getDouble("paid");
+
+            double discount =
+                    rs.getDouble("discount");
+
+            Timestamp ts =
+                    rs.getTimestamp("last_payment");
+
+            lblStudentTotalPaid.setText(
+                    "₹ " +
+                    String.format("%,.2f", paid)
+            );
+
+            lblStudentTotalDiscount.setText(
+                    "₹ " +
+                    String.format("%,.2f", discount)
+            );
+
+            lblStudentPending.setText(
+                    "₹ 0"
+            );
+
+            lblStudentLastPayment.setText(
+                    ts != null
+                            ? ts.toLocalDateTime()
+                            .format(DISP_FMT)
+                            : "-"
+            );
+        }
+
+    }
+    catch(Exception ex) {
+
+        ex.printStackTrace();
+    }
+}
 
     // ─────────────────────────────────────────
     //  COURSE WISE
@@ -556,4 +1149,131 @@ public class FeesCollectionReport extends JFrame {
 
         return lVal;
     }
+
+    // ─────────────────────────────────────────
+    //  COURSE ANALYSIS
+    // ─────────────────────────────────────────
+    private void updateCourseAnalysis() {
+
+        String courseName = courseBox.getSelectedItem() != null
+            ? courseBox.getSelectedItem().toString() : "";
+
+        boolean allCourses = courseName.isEmpty()
+            || courseName.equals("-- All Courses --");
+
+        try {
+            // ── Total institute revenue ──
+            pst = con.prepareStatement(
+                "SELECT COALESCE(SUM(amount_paid), 0) AS total " +
+                "FROM fee_payments");
+            rs = pst.executeQuery();
+            double totalRevenue = 0.0;
+            if (rs.next()) totalRevenue = rs.getDouble("total");
+            lblTotalRevenue.setText(
+                String.format("₹ %,.2f", totalRevenue));
+
+            if (allCourses) {
+                // show totals for all courses
+                lblCourseStudents.setText(
+                    String.valueOf(
+                        (int) getCount(
+                            "SELECT COUNT(DISTINCT student_id) " +
+                            "FROM fee_payment_courses")));
+                lblCourseRevenue.setText(
+                    String.format("₹ %,.2f", totalRevenue));
+                lblCoursePercent.setText("100.00%");
+
+            // ==========================================================
+            // AVERAGE REVENUE PER STUDENT
+            // ==========================================================
+
+            JLabel avgTitle = UIUtils.plain(
+                    "Avg Revenue / Student:",
+                    12
+            );
+
+            avgTitle.setBounds(900, 24, 180, 20);
+
+            courseAnalysisPanel.add(avgTitle);
+
+            lblAverageRevenuePerStudent =
+                    UIUtils.bold("₹ 0", 16);
+
+            lblAverageRevenuePerStudent.setForeground(
+                    new Color(0,102,204)
+            );
+
+            lblAverageRevenuePerStudent.setBounds(
+                    900,
+                    44,
+                    180,
+                    24
+            );
+
+            courseAnalysisPanel.add(
+                    lblAverageRevenuePerStudent
+            );
+
+                lblCoursePercentBar.setBounds(680, 78, 400, 18);
+                return;
+            }
+
+            // ── Students enrolled in this course ──
+            pst = con.prepareStatement(
+                "SELECT COUNT(DISTINCT fpc.student_id) AS cnt " +
+                "FROM fee_payment_courses fpc " +
+                "JOIN courses c ON fpc.course_id = c.id " +
+                "WHERE c.course_name = ?");
+            pst.setString(1, courseName);
+            rs = pst.executeQuery();
+            int studentCount = 0;
+            if (rs.next()) studentCount = rs.getInt("cnt");
+            lblCourseStudents.setText(String.valueOf(studentCount));
+
+            // ── Revenue from this course ──
+            pst = con.prepareStatement(
+                "SELECT COALESCE(SUM(fp.amount_paid), 0) AS rev " +
+                "FROM fee_payments fp " +
+                "JOIN fee_payment_courses fpc " +
+                "  ON fpc.fee_payment_id = fp.id " +
+                "JOIN courses c ON fpc.course_id = c.id " +
+                "WHERE c.course_name = ?");
+            pst.setString(1, courseName);
+            rs = pst.executeQuery();
+            double courseRevenue = 0.0;
+            if (rs.next()) courseRevenue = rs.getDouble("rev");
+            lblCourseRevenue.setText(
+                String.format("₹ %,.2f", courseRevenue));
+
+            // ── Percentage ──
+            double percent = totalRevenue > 0
+                ? (courseRevenue / totalRevenue) * 100.0 : 0.0;
+            lblCoursePercent.setText(
+                String.format("%.2f%%", percent));
+
+                double avgRevenue =
+                studentCount > 0
+                        ? courseRevenue / studentCount
+                        : 0;
+        
+        lblAverageRevenuePerStudent.setText(
+                "₹ " +
+                String.format("%,.2f", avgRevenue)
+        );
+        
+            
+            // ── Progress bar width (max 400px = 100%) ──
+            int barWidth = (int) Math.round(percent * 4.0); // 4px per 1%
+            barWidth = Math.min(barWidth, 400);
+            lblCoursePercentBar.setBounds(680, 78, barWidth, 18);
+
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    private double getCount(String query) throws Exception {
+        pst = con.prepareStatement(query);
+        rs  = pst.executeQuery();
+        return rs.next() ? rs.getDouble(1) : 0;
+    }
+
 }
