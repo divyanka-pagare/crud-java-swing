@@ -33,5 +33,9 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/16d7c817-0ecc-4c73-accf-254054d92c41" />
 
+## Fees Collection Report - Date Wise
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/ac4033b2-aa1e-4188-bf91-d851d14b202b" />
 
 
+# Fees Collection Report 
