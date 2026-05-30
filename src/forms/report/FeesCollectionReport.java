@@ -574,7 +574,7 @@ public class FeesCollectionReport extends JFrame {
                 rs = pst.executeQuery();
             
                 if (rs.next()) {
-                    lblCoursePercent.setText(rs.getString("100.00%"));
+                    lblCoursePercent.setText("100.00%");
                 } else {
                     lblCoursePercent.setText("—");
                 }
@@ -597,10 +597,11 @@ public class FeesCollectionReport extends JFrame {
                 
                 pst = con.prepareStatement(
                     "SELECT COUNT(DISTINCT fp.id) cnt " +
-                    "FROM fee_payments fp" +
+                    "FROM fee_payments fp " +
                     "JOIN fee_payment_courses fpc ON fp.id=fpc.fee_payment_id " +
                     "JOIN courses c ON c.id=fpc.course_id " +
-                    "WHERE c.course_name=?");
+                    "WHERE c.course_name=?"
+                );
                 
                 pst.setString(1,cName);
                 
@@ -611,9 +612,15 @@ public class FeesCollectionReport extends JFrame {
                         String.valueOf(rs.getInt("cnt")));
                 }
 
-                double pct = totalRev>0 ? (cRev/totalRev)*100.0 : 0;
-                lblCoursePercent.setText(String.format("%.2f%%", pct));
+                System.out.println("Course Revenue = " + cRev);
+                System.out.println("Total Revenue = " + totalRev);
 
+                double pct = totalRev > 0
+                        ? (cRev * 100.0) / totalRev
+                        : 0;
+
+                lblCoursePercent.setText(
+        String.format("%.2f%%", pct));
                 pst = con.prepareStatement(
                     "SELECT c.course_name, SUM(fp.amount_paid) revenue " +
                     "FROM fee_payments fp " +
