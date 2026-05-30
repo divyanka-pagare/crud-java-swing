@@ -9,75 +9,47 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
-// import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-
-// import java.util.HashMap;
-// import java.util.Map;
 
 public class FeesCollectionReport extends JFrame {
 
     // ===== FILTER CONTROLS =====
     JComboBox<String> viewByBox;
-
-    // date wise
     JPanel      dateWisePanel;
     JSpinner    spinFrom, spinTo;
-
-    // student wise
     JPanel            studentWisePanel;
     JComboBox<String> studentBox;
     JSpinner          spinStudentFrom, spinStudentTo;
-
-    // course wise
     JPanel            courseWisePanel;
     JComboBox<String> courseBox;
-
     JScrollPane reportScroll;
 
-    // ===== COURSE ANALYSIS PANEL =====
-    JPanel  courseAnalysisPanel;
-    JLabel  lblCourseStudents, lblCourseRevenue,
-            lblTotalRevenue,   lblCoursePercent,
-            lblCoursePercentBar;
+    // ===== ANALYTICS PANELS =====
+    JPanel analyticsPanel;
+    JLabel lblHighestDay, lblAverageDay, lblPendingPayments, lblTopCourse;
+
+    JPanel studentSummaryPanel;
+    JLabel lblStudentTotalPaid, lblStudentTotalDiscount,
+           lblStudentPending,   lblStudentLastPayment;
+
+    JPanel courseAnalysisPanel;
+    JLabel lblCourseStudents, lblCourseRevenue,
+           lblTotalRevenue,   lblCoursePercent,
+           lblAvgRevenue,     lblCoursePercentBar;
 
     // ===== SUMMARY CARDS =====
     JLabel lblTotalCollection, lblTotalStudents,
            lblTotalCourses,    lblTotalPayments;
 
-    // ===== ANALYTICS PANELS =====
-    JPanel analyticsPanel;
-    
-    // ===== INSIGHT LABELS =====
-    JLabel lblHighestDay;
-    JLabel lblAverageDay;
-    JLabel lblPendingPayments;
-    JLabel lblTopCourse;
-    
-    // ===== STUDENT SUMMARY =====
-    JPanel studentSummaryPanel;
-    
-    JLabel lblStudentTotalPaid;
-    JLabel lblStudentTotalDiscount;
-    JLabel lblStudentPending;
-    JLabel lblStudentLastPayment;
-    
-    // ===== COURSE EXTRA ANALYTICS =====
-    JLabel lblAverageRevenuePerStudent;
-    JLabel lblTopPaymentMode;
-    
-           
-    // ===== MAIN REPORT TABLE =====
+    // ===== TABLE =====
     JTable            reportTable;
     DefaultTableModel reportModel;
 
-    Connection con;
+    Connection        con;
     PreparedStatement pst;
-    ResultSet rs;
+    ResultSet         rs;
 
-    static final DateTimeFormatter DB_FMT   =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd");
     static final DateTimeFormatter DISP_FMT =
         DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
@@ -103,8 +75,7 @@ public class FeesCollectionReport extends JFrame {
         // ─────────────────────────────────────────
         JPanel filterBar = new JPanel(null);
         filterBar.setBackground(Color.WHITE);
-        filterBar.setBorder(BorderFactory.createLineBorder(
-            new Color(210, 215, 220)));
+        filterBar.setBorder(BorderFactory.createLineBorder(new Color(210,215,220)));
         filterBar.setBounds(30, 62, 1120, 70);
         main.add(filterBar);
 
@@ -112,9 +83,7 @@ public class FeesCollectionReport extends JFrame {
         lView.setBounds(15, 22, 70, 26);
         filterBar.add(lView);
 
-        viewByBox = new JComboBox<>(new String[]{
-            "Date Wise", "Student Wise", "Course Wise"
-        });
+        viewByBox = new JComboBox<>(new String[]{"Date Wise","Student Wise","Course Wise"});
         viewByBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         viewByBox.setBounds(88, 20, 140, 32);
         filterBar.add(viewByBox);
@@ -125,35 +94,22 @@ public class FeesCollectionReport extends JFrame {
         dateWisePanel.setBounds(245, 5, 700, 60);
         filterBar.add(dateWisePanel);
 
-        JLabel lFrom = UIUtils.plain("From:", 13);
-        lFrom.setBounds(0, 18, 45, 26);
-        dateWisePanel.add(lFrom);
-
+        UIUtils.plain("From:", 13).setBounds(0, 18, 45, 26);
+        dateWisePanel.add(label("From:", 0, 18));
         spinFrom = dateSpinner();
         spinFrom.setBounds(48, 16, 145, 30);
         dateWisePanel.add(spinFrom);
-
-        JLabel lTo = UIUtils.plain("To:", 13);
-        lTo.setBounds(205, 18, 30, 26);
-        dateWisePanel.add(lTo);
-
+        dateWisePanel.add(label("To:", 205, 18));
         spinTo = dateSpinner();
         spinTo.setBounds(238, 16, 145, 30);
         dateWisePanel.add(spinTo);
 
-        JButton btnGen1 = UIUtils.colorButton("Generate",
-            UIUtils.CLR_BLUE, 398, 16, 110, 32);
-        JButton btnClr1 = UIUtils.colorButton("Clear",
-            UIUtils.CLR_GRAY, 518, 16, 80, 32);
+        JButton btnGen1 = UIUtils.colorButton("Generate", UIUtils.CLR_BLUE, 398, 16, 110, 32);
+        JButton btnClr1 = UIUtils.colorButton("Clear",    UIUtils.CLR_GRAY, 518, 16,  80, 32);
         dateWisePanel.add(btnGen1);
         dateWisePanel.add(btnClr1);
-
         btnGen1.addActionListener(e -> generateReport());
-        btnClr1.addActionListener(e -> {
-            resetDateSpinner(spinFrom, -30);
-            resetDateSpinner(spinTo,     0);
-            generateReport();
-        });
+        btnClr1.addActionListener(e -> { resetSpinner(spinFrom,-30); resetSpinner(spinTo,0); generateReport(); });
 
         // ── Student Wise Panel ──
         studentWisePanel = new JPanel(null);
@@ -162,33 +118,20 @@ public class FeesCollectionReport extends JFrame {
         studentWisePanel.setVisible(false);
         filterBar.add(studentWisePanel);
 
-        JLabel lStu = UIUtils.plain("Student:", 13);
-        lStu.setBounds(0, 18, 65, 26);
-        studentWisePanel.add(lStu);
-
+        studentWisePanel.add(label("Student:", 0, 18));
         studentBox = new JComboBox<>();
         studentBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        studentBox.setBounds(68, 16, 200, 32);
+        studentBox.setBounds(70, 16, 200, 32);
         studentWisePanel.add(studentBox);
-
-        JLabel lSFrom = UIUtils.plain("From:", 13);
-        lSFrom.setBounds(280, 18, 45, 26);
-        studentWisePanel.add(lSFrom);
-
+        studentWisePanel.add(label("From:", 282, 18));
         spinStudentFrom = dateSpinner();
         spinStudentFrom.setBounds(328, 16, 145, 30);
         studentWisePanel.add(spinStudentFrom);
-
-        JLabel lSTo = UIUtils.plain("To:", 13);
-        lSTo.setBounds(485, 18, 30, 26);
-        studentWisePanel.add(lSTo);
-
+        studentWisePanel.add(label("To:", 485, 18));
         spinStudentTo = dateSpinner();
         spinStudentTo.setBounds(518, 16, 145, 30);
         studentWisePanel.add(spinStudentTo);
-
-        JButton btnGen2 = UIUtils.colorButton("Generate",
-            UIUtils.CLR_BLUE, 675, 16, 110, 32);
+        JButton btnGen2 = UIUtils.colorButton("Generate", UIUtils.CLR_BLUE, 675, 16, 110, 32);
         studentWisePanel.add(btnGen2);
         btnGen2.addActionListener(e -> generateReport());
 
@@ -199,338 +142,520 @@ public class FeesCollectionReport extends JFrame {
         courseWisePanel.setVisible(false);
         filterBar.add(courseWisePanel);
 
-        JLabel lCrs = UIUtils.plain("Course:", 13);
-        lCrs.setBounds(0, 18, 60, 26);
-        courseWisePanel.add(lCrs);
-
+        courseWisePanel.add(label("Course:", 0, 18));
         courseBox = new JComboBox<>();
         courseBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        courseBox.setBounds(64, 16, 260, 32);
+        courseBox.setBounds(66, 16, 260, 32);
         courseWisePanel.add(courseBox);
-
-        JButton btnGen3 = UIUtils.colorButton("Generate",
-            UIUtils.CLR_BLUE, 338, 16, 110, 32);
+        JButton btnGen3 = UIUtils.colorButton("Generate", UIUtils.CLR_BLUE, 338, 16, 110, 32);
         courseWisePanel.add(btnGen3);
         btnGen3.addActionListener(e -> generateReport());
 
         // ─────────────────────────────────────────
-        //  SUMMARY CARDS
+        //  4 SUMMARY CARDS (always visible)
         // ─────────────────────────────────────────
-        lblTotalCollection = summaryCard(main,
-            "Total Collection", "₹ 0.00",
-            new Color(0, 102, 204), 30, 145);
-        lblTotalStudents = summaryCard(main,
-            "Students Paid", "0",
-            new Color(40, 167, 69), 305, 145);
-        lblTotalCourses = summaryCard(main,
-            "Courses Enrolled", "0",
-            new Color(153, 0, 153), 580, 145);
-        lblTotalPayments = summaryCard(main,
-            "Total Transactions", "0",
-            new Color(220, 53, 69), 855, 145);
+        lblTotalCollection = summaryCard(main,"Total Collection","₹ 0.00", new Color(0,102,204),  30,145);
+        lblTotalStudents   = summaryCard(main,"Students Paid",   "0",      new Color(40,167,69),  305,145);
+        lblTotalCourses    = summaryCard(main,"Courses Enrolled","0",      new Color(153,0,153),  580,145);
+        lblTotalPayments   = summaryCard(main,"Total Transactions","0",    new Color(220,53,69),  855,145);
 
-        // ==========================================================
-        // ANALYTICS PANEL
-        // ==========================================================
-        
-        analyticsPanel = new JPanel(null);
-        analyticsPanel.setBackground(Color.WHITE);
-        analyticsPanel.setBorder(BorderFactory.createLineBorder(
-                new Color(210,215,220)));
-        
-        analyticsPanel.setBounds(30, 240, 1120, 180);
-        
-        main.add(analyticsPanel);
-        
+        // ─────────────────────────────────────────
+        //  DATE WISE — analytics strip
+        // ─────────────────────────────────────────
+        analyticsPanel = strip(main, 30, 240, 1120, 130);
 
-        // ==========================================================
-        // STUDENT SUMMARY PANEL
-        // ==========================================================
+        lblHighestDay      = statCard(analyticsPanel,"Highest Collection Day","—",         new Color(0,102,204), 0);
+        lblAverageDay      = statCard(analyticsPanel,"Average Daily Collection","₹ 0",     new Color(40,167,69), 1);
+        lblPendingPayments = statCard(analyticsPanel,"Pending Payments","0",               new Color(220,53,69), 2);
+        lblTopCourse       = statCard(analyticsPanel,"Top Revenue Course","—",             new Color(153,0,153), 3);
 
-        studentSummaryPanel = new JPanel(null);
-
-        studentSummaryPanel.setBackground(Color.WHITE);
-
-        studentSummaryPanel.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                new Color(210,215,220)
-                        ),
-                        "Student Financial Summary"
-                )
-        );
-
-        studentSummaryPanel.setBounds(
-                30,
-                340,
-                1120,
-                100
-        );
-
+        // ─────────────────────────────────────────
+        //  STUDENT WISE — analytics strip
+        // ─────────────────────────────────────────
+        studentSummaryPanel = strip(main, 30, 240, 1120, 100);
         studentSummaryPanel.setVisible(false);
 
-        main.add(studentSummaryPanel);
-
-        lblStudentTotalPaid = summaryText(
-                studentSummaryPanel,
-                "Total Paid",
-                "₹ 0",
-                20
-        );
-
-        lblStudentTotalDiscount = summaryText(
-                studentSummaryPanel,
-                "Discount",
-                "₹ 0",
-                300
-        );
-
-        lblStudentPending = summaryText(
-                studentSummaryPanel,
-                "Pending",
-                "₹ 0",
-                580
-        );
-
-        lblStudentLastPayment = summaryText(
-                studentSummaryPanel,
-                "Last Payment",
-                "-",
-                860
-        );
-        // ─────────────────────────────────────────
-        // INSIGHT CARDS
-        // ─────────────────────────────────────────
-        
-        lblHighestDay = createAnalyticsCard(
-                analyticsPanel,
-                "Highest Collection Day",
-                "₹ 0",
-                new Color(0,102,204),
-                20,
-                20
-        );
-        
-        lblAverageDay = createAnalyticsCard(
-                analyticsPanel,
-                "Average Collection",
-                "₹ 0",
-                new Color(40,167,69),
-                290,
-                20
-        );
-        
-        lblPendingPayments = createAnalyticsCard(
-                analyticsPanel,
-                "Pending Payments",
-                "0",
-                new Color(220,53,69),
-                560,
-                20
-        );
-        
-        lblTopCourse = createAnalyticsCard(
-                analyticsPanel,
-                "Top Course",
-                "-",
-                new Color(153,0,153),
-                830,
-                20
-        );
+        lblStudentTotalPaid     = statCard(studentSummaryPanel,"Total Fees Paid","₹ 0",      new Color(0,102,204), 0);
+        lblStudentTotalDiscount = statCard(studentSummaryPanel,"Total Discount", "₹ 0",      new Color(40,167,69), 1);
+        lblStudentPending       = statCard(studentSummaryPanel,"Pending Amount", "₹ 0",      new Color(220,53,69), 2);
+        lblStudentLastPayment   = statCard(studentSummaryPanel,"Last Payment Date","—",       new Color(153,0,153), 3);
 
         // ─────────────────────────────────────────
-        //  COURSE ANALYSIS PANEL (visible only in Course Wise)
+        //  COURSE WISE — analytics strip (5 items)
         // ─────────────────────────────────────────
-        courseAnalysisPanel = new JPanel(null);
-        courseAnalysisPanel.setBackground(Color.WHITE);
-        courseAnalysisPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(210, 215, 220)),
-            "Course Analysis",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Segoe UI", Font.BOLD, 12)));
-        courseAnalysisPanel.setBounds(30, 240, 1120, 110);
+        courseAnalysisPanel = strip(main, 30, 240, 1120, 130);
         courseAnalysisPanel.setVisible(false);
-        main.add(courseAnalysisPanel);
+        lblCourseStudents = statCard(courseAnalysisPanel,"Students Enrolled",        "0",      new Color(0,102,204),  0);
 
-        // ── Students in course ──
-        JLabel lCS = UIUtils.plain("Students Enrolled:", 12);
-        lCS.setBounds(14, 24, 150, 20);
-        courseAnalysisPanel.add(lCS);
-        lblCourseStudents = UIUtils.bold("0", 18);
-        lblCourseStudents.setForeground(new Color(0, 102, 204));
-        lblCourseStudents.setBounds(14, 44, 150, 28);
-        courseAnalysisPanel.add(lblCourseStudents);
-
-        // ── Course revenue ──
-        JLabel lCR = UIUtils.plain("Course Revenue:", 12);
-        lCR.setBounds(200, 24, 150, 20);
-        courseAnalysisPanel.add(lCR);
-        lblCourseRevenue = UIUtils.bold("₹ 0.00", 18);
-        lblCourseRevenue.setForeground(new Color(40, 167, 69));
-        lblCourseRevenue.setBounds(200, 44, 200, 28);
-        courseAnalysisPanel.add(lblCourseRevenue);
-
-        // ── Total revenue of institute ──
-        JLabel lTR = UIUtils.plain("Total Institute Revenue:", 12);
-        lTR.setBounds(440, 24, 180, 20);
-        courseAnalysisPanel.add(lTR);
-        lblTotalRevenue = UIUtils.bold("₹ 0.00", 18);
-        lblTotalRevenue.setForeground(new Color(153, 0, 153));
-        lblTotalRevenue.setBounds(440, 44, 200, 28);
-        courseAnalysisPanel.add(lblTotalRevenue);
-
-        // ── Percentage contribution ──
-        JLabel lCP = UIUtils.plain("Contribution to Total Revenue:", 12);
-        lCP.setBounds(680, 24, 220, 20);
-        courseAnalysisPanel.add(lCP);
-        lblCoursePercent = UIUtils.bold("0.00%", 22);
-        lblCoursePercent.setForeground(new Color(220, 53, 69));
-        lblCoursePercent.setBounds(680, 44, 160, 30);
-        courseAnalysisPanel.add(lblCoursePercent);
-
-        // ── Progress bar (drawn as colored panel) ──
-        JLabel lBarBg = new JLabel();
-        lBarBg.setBackground(new Color(230, 230, 230));
-        lBarBg.setOpaque(true);
-        lBarBg.setBounds(680, 78, 400, 18);
-        courseAnalysisPanel.add(lBarBg);
-
-        lblCoursePercentBar = new JLabel();
-        lblCoursePercentBar.setBackground(new Color(220, 53, 69));
-        lblCoursePercentBar.setOpaque(true);
-        lblCoursePercentBar.setBounds(680, 78, 0, 18);
-        courseAnalysisPanel.add(lblCoursePercentBar);
-
+        lblCourseRevenue  = statCard(courseAnalysisPanel,"Total Transactions",       "0",      new Color(40,167,69),  1);
+        
+        lblTotalRevenue   = statCard(courseAnalysisPanel,"Top Revenue Course",       "—",      new Color(153,0,153),  2);
+        
+        lblCoursePercent  = statCard(courseAnalysisPanel,"Contribution %",           "0.00%",  new Color(220,53,69),  3);
+        
+        lblAvgRevenue     = statCard(courseAnalysisPanel,"Avg Revenue / Student",    "₹ 0.00", new Color(23,162,184), 4);
         // ─────────────────────────────────────────
         //  REPORT TABLE
         // ─────────────────────────────────────────
         reportModel = new DefaultTableModel(
-            new String[]{"#","Date","Student","Courses",
-                         "Mode","Discount","Amount Paid","Status"}, 0) {
+            new String[]{"#","Date","Student","Courses","Mode","Discount","Amount Paid","Status"}, 0) {
             public boolean isCellEditable(int r, int c) { return false; }
         };
 
         reportTable = TableUtils.createStyledTable(reportModel);
+        reportTable.setFillsViewportHeight(true);
+        reportTable.setRowHeight(38);
 
+        // colour Paid/Pending in Status column
+        reportTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable t, Object v, boolean sel, boolean foc, int r, int c) {
+                Component comp = super.getTableCellRendererComponent(t,v,sel,foc,r,c);
+                String val = v != null ? v.toString() : "";
+                if (!sel) {
+                    if (val.equalsIgnoreCase("Paid"))    comp.setForeground(new Color(40,167,69));
+                    else if (val.equalsIgnoreCase("Pending")) comp.setForeground(new Color(220,53,69));
+                    else comp.setForeground(Color.BLACK);
+                }
+                setHorizontalAlignment(JLabel.CENTER);
+                return comp;
+            }
+        });
 
-        reportScroll = UIUtils.scrollPane(reportTable, 30, 240, 1120, 460);
+        reportScroll = UIUtils.scrollPane(reportTable, 30, 350, 1120, 400);
+        reportScroll.getViewport().setBackground(Color.WHITE);
+        reportScroll.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
         main.add(reportScroll);
 
         add(main);
-
-        reportTable.setDefaultRenderer(
-        Object.class,
-        new DefaultTableCellRenderer() {
-
-            @Override
-            public Component getTableCellRendererComponent(
-                    JTable table,
-                    Object value,
-                    boolean isSelected,
-                    boolean hasFocus,
-                    int row,
-                    int column
-            ) {
-
-                Component c =
-                        super.getTableCellRendererComponent(
-                                table,
-                                value,
-                                isSelected,
-                                hasFocus,
-                                row,
-                                column
-                        );
-
-                String val =
-                        value != null
-                                ? value.toString()
-                                : "";
-
-                if(val.equalsIgnoreCase("Paid")) {
-
-                    c.setForeground(
-                            new Color(40,167,69)
-                    );
-                }
-                else if(val.equalsIgnoreCase("Pending")) {
-
-                    c.setForeground(
-                            new Color(220,53,69)
-                    );
-                }
-                else {
-
-                    c.setForeground(Color.BLACK);
-                }
-
-                return c;
-            }
-        }
-);
 
         // ── Load dropdowns ──
         loadStudentDropdown();
         loadCourseDropdown();
 
-        // ── Set default date ranges ──
-        resetDateSpinner(spinFrom, -30);
-        resetDateSpinner(spinTo,     0);
+        resetSpinner(spinFrom, -30);
+        resetSpinner(spinTo,     0);
         setStudentDefaultDates();
 
-        // ── View By listener ──
+        // ── Listeners ──
         viewByBox.addActionListener(e -> {
             String v = viewByBox.getSelectedItem().toString();
             dateWisePanel   .setVisible(v.equals("Date Wise"));
             studentWisePanel.setVisible(v.equals("Student Wise"));
             courseWisePanel .setVisible(v.equals("Course Wise"));
-            courseAnalysisPanel .setVisible(v.equals("Course Wise"));
             updateTableColumns();
             generateReport();
         });
 
-        // ── Student dropdown listener ──
         studentBox.addActionListener(e -> generateReport());
-
-        // ── Course dropdown listener ──
-        courseBox.addActionListener(e -> {
-            generateReport();
-            if (viewByBox.getSelectedItem().toString().equals("Course Wise")) {
-                updateCourseAnalysis();
-            }
-        });
+        courseBox .addActionListener(e -> generateReport());
 
         generateReport();
         setVisible(true);
     }
 
     // ─────────────────────────────────────────
-    //  DATE SPINNER FACTORY
+    //  GENERATE REPORT
     // ─────────────────────────────────────────
-    private JSpinner dateSpinner() {
-        JSpinner s = new JSpinner(
-            new SpinnerDateModel());
-        JSpinner.DateEditor editor =
-            new JSpinner.DateEditor(s, "dd-MM-yyyy");
-        s.setEditor(editor);
-        s.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        return s;
+    public void generateReport() {
+
+        String view = viewByBox.getSelectedItem().toString();
+        updateTableColumns();
+
+        analyticsPanel     .setVisible(false);
+        studentSummaryPanel.setVisible(false);
+        courseAnalysisPanel.setVisible(false);
+
+        int tableY;
+
+        switch (view) {
+
+            case "Date Wise":
+                analyticsPanel.setVisible(true);
+                analyticsPanel.setBounds(30, 240, 1120, 110);
+                tableY = 380;
+                loadDateWise(spinDate(spinFrom), spinDate(spinTo));
+                updateDateAnalytics(spinDate(spinFrom), spinDate(spinTo));
+                break;
+
+            case "Student Wise":
+                String sName = studentBox.getSelectedItem() != null
+                    ? studentBox.getSelectedItem().toString() : "";
+                boolean show = !sName.equals("-- All Students --");
+                studentSummaryPanel.setVisible(show);
+                studentSummaryPanel.setBounds(30, 240, 1120, 110);
+                tableY = show ? 380 : 240;
+                loadStudentWise(sName, spinDate(spinStudentFrom), spinDate(spinStudentTo));
+                if (show) updateStudentSummary(sName);
+                break;
+
+            case "Course Wise":
+                courseAnalysisPanel.setVisible(true);
+                courseAnalysisPanel.setBounds(30, 240, 1120, 110);
+                tableY = 380;
+                String cName = courseBox.getSelectedItem() != null
+                    ? courseBox.getSelectedItem().toString() : "";
+                loadCourseWise(cName);
+                updateCourseAnalysis(cName);
+                break;
+
+            default:
+                tableY = 240;
+                break;
+        }
+
+        int tableH = getHeight() - tableY - 50;
+        reportScroll.setBounds(30, tableY, 1120, Math.max(tableH, 200));
+
+        updateSummaryCards();
+        TableUtils.resizeColumnWidth(reportTable);
+        revalidate();
+        repaint();
     }
 
-    private void resetDateSpinner(JSpinner spinner, int daysOffset) {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, daysOffset);
-        spinner.setValue(cal.getTime());
+    // ─────────────────────────────────────────
+    //  UPDATE COLUMNS
+    // ─────────────────────────────────────────
+    private void updateTableColumns() {
+        reportModel.setRowCount(0);
+        switch (viewByBox.getSelectedItem().toString()) {
+            case "Date Wise":
+                reportModel.setColumnIdentifiers(new String[]{
+                    "#","Date","Student","Courses","Mode","Discount","Amount Paid","Status"});
+                break;
+            case "Student Wise":
+                reportModel.setColumnIdentifiers(new String[]{
+                    "#","Payment Date","Courses Paid","Mode","Discount","Amount Paid","Status"});
+                break;
+            case "Course Wise":
+                reportModel.setColumnIdentifiers(new String[]{
+                    "#","Student","Payment Date","Mode","Amount Paid","Status"});
+                break;
+        }
     }
 
-    private void setStudentDefaultDates() {
-        // to = today, from = 1 year ago
-        Calendar to = Calendar.getInstance();
-        Calendar from = Calendar.getInstance();
-        from.add(Calendar.YEAR, -1);
-        spinStudentTo  .setValue(to.getTime());
-        spinStudentFrom.setValue(from.getTime());
+    // ─────────────────────────────────────────
+    //  DATE WISE DATA
+    // ─────────────────────────────────────────
+    private void loadDateWise(String from, String to) {
+        try {
+            pst = con.prepareStatement(
+                "SELECT fp.paid_at, s.name, " +
+                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
+                "fp.payment_mode, fp.discount_amt, fp.amount_paid, fp.payment_status " +
+                "FROM fee_payments fp " +
+                "JOIN students s ON fp.student_id = s.id " +
+                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
+                "LEFT JOIN courses c ON fpc.course_id = c.id " +
+                "WHERE DATE(fp.paid_at) BETWEEN ? AND ? " +
+                "GROUP BY fp.id ORDER BY fp.paid_at DESC");
+            pst.setString(1, from); pst.setString(2, to);
+            rs = pst.executeQuery();
+            int i = 1;
+            while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("paid_at");
+                String dt = ts!=null ? ts.toLocalDateTime().format(DISP_FMT) : "—";
+                double d  = rs.getDouble("discount_amt");
+                reportModel.addRow(new Object[]{
+                    i++, dt, rs.getString("s.name"),
+                    rs.getString("courses")!=null ? rs.getString("courses") : "—",
+                    rs.getString("payment_mode"),
+                    d>0 ? String.format("- ₹ %,.2f",d) : "—",
+                    String.format("₹ %,.2f", rs.getDouble("amount_paid")),
+                    rs.getString("payment_status")
+                });
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    private void updateDateAnalytics(String from, String to) {
+        try {
+            // highest day
+            pst = con.prepareStatement(
+                "SELECT DATE(paid_at) d, SUM(amount_paid) total FROM fee_payments " +
+                "WHERE DATE(paid_at) BETWEEN ? AND ? GROUP BY DATE(paid_at) ORDER BY total DESC LIMIT 1");
+            pst.setString(1,from); pst.setString(2,to); rs=pst.executeQuery();
+            lblHighestDay.setText(rs.next()
+                ? rs.getString("d")+" | ₹ "+String.format("%,.2f",rs.getDouble("total")) : "—");
+
+            // average
+            pst = con.prepareStatement(
+                "SELECT AVG(dt) avg FROM (SELECT SUM(amount_paid) dt FROM fee_payments " +
+                "WHERE DATE(paid_at) BETWEEN ? AND ? GROUP BY DATE(paid_at)) x");
+            pst.setString(1,from); pst.setString(2,to); rs=pst.executeQuery();
+            lblAverageDay.setText(rs.next()
+                ? "₹ "+String.format("%,.2f",rs.getDouble("avg")) : "₹ 0");
+
+            // pending
+            pst = con.prepareStatement(
+                "SELECT COUNT(*) cnt FROM fee_payments WHERE payment_status != 'Paid'");
+            rs=pst.executeQuery();
+            lblPendingPayments.setText(rs.next() ? String.valueOf(rs.getInt("cnt")) : "0");
+
+            // top course
+            pst = con.prepareStatement(
+                "SELECT c.course_name, SUM(fp.amount_paid) total " +
+                "FROM fee_payments fp JOIN fee_payment_courses fpc ON fpc.fee_payment_id=fp.id " +
+                "JOIN courses c ON c.id=fpc.course_id GROUP BY c.course_name ORDER BY total DESC LIMIT 1");
+            rs=pst.executeQuery();
+            lblTopCourse.setText(rs.next() ? rs.getString("course_name") : "—");
+
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    // ─────────────────────────────────────────
+    //  STUDENT WISE DATA
+    // ─────────────────────────────────────────
+    private void loadStudentWise(String sName, String from, String to) {
+        try {
+            boolean all = sName.isEmpty() || sName.equals("-- All Students --");
+            StringBuilder q = new StringBuilder(
+                "SELECT fp.paid_at, " +
+                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
+                "fp.payment_mode, fp.discount_amt, fp.amount_paid, fp.payment_status " +
+                "FROM fee_payments fp JOIN students s ON fp.student_id=s.id " +
+                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id=fp.id " +
+                "LEFT JOIN courses c ON fpc.course_id=c.id " +
+                "WHERE DATE(fp.paid_at) BETWEEN ? AND ? ");
+            if (!all) q.append("AND s.name=? ");
+            q.append("GROUP BY fp.id ORDER BY fp.paid_at DESC");
+
+            pst = con.prepareStatement(q.toString());
+            pst.setString(1,from); pst.setString(2,to);
+            if (!all) pst.setString(3,sName);
+            rs = pst.executeQuery();
+            int i=1;
+            while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("paid_at");
+                String dt = ts!=null ? ts.toLocalDateTime().format(DISP_FMT) : "—";
+                double d  = rs.getDouble("discount_amt");
+                reportModel.addRow(new Object[]{
+                    i++, dt,
+                    rs.getString("courses")!=null ? rs.getString("courses") : "—",
+                    rs.getString("payment_mode"),
+                    d>0 ? String.format("- ₹ %,.2f",d) : "—",
+                    String.format("₹ %,.2f", rs.getDouble("amount_paid")),
+                    rs.getString("payment_status")
+                });
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    private void updateStudentSummary(String sName) {
+        try {
+            pst = con.prepareStatement(
+                "SELECT SUM(fp.amount_paid) paid, SUM(fp.discount_amt) disc, MAX(fp.paid_at) last " +
+                "FROM fee_payments fp JOIN students s ON s.id=fp.student_id WHERE s.name=?");
+            pst.setString(1,sName); rs=pst.executeQuery();
+            if (rs.next()) {
+                lblStudentTotalPaid    .setText("₹ "+String.format("%,.2f",rs.getDouble("paid")));
+                lblStudentTotalDiscount.setText("₹ "+String.format("%,.2f",rs.getDouble("disc")));
+                lblStudentPending      .setText("₹ 0");
+                Timestamp ts = rs.getTimestamp("last");
+                lblStudentLastPayment  .setText(ts!=null
+                    ? ts.toLocalDateTime().format(DISP_FMT) : "—");
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    // ─────────────────────────────────────────
+    //  COURSE WISE DATA
+    // ─────────────────────────────────────────
+    private void loadCourseWise(String cName) {
+        try {
+            boolean all = cName.isEmpty() || cName.equals("-- All Courses --");
+            StringBuilder q = new StringBuilder(
+                "SELECT s.name, fp.paid_at, fp.payment_mode, fp.amount_paid, fp.payment_status " +
+                "FROM fee_payments fp JOIN students s ON fp.student_id=s.id " +
+                "JOIN fee_payment_courses fpc ON fpc.fee_payment_id=fp.id " +
+                "JOIN courses c ON fpc.course_id=c.id WHERE 1=1 ");
+            if (!all) q.append("AND c.course_name=? ");
+            q.append("ORDER BY fp.paid_at DESC");
+
+            pst = con.prepareStatement(q.toString());
+            if (!all) pst.setString(1,cName);
+            rs = pst.executeQuery();
+            int i=1;
+            while (rs.next()) {
+                Timestamp ts = rs.getTimestamp("paid_at");
+                String dt = ts!=null ? ts.toLocalDateTime().format(DISP_FMT) : "—";
+                reportModel.addRow(new Object[]{
+                    i++, rs.getString("s.name"), dt,
+                    rs.getString("payment_mode"),
+                    String.format("₹ %,.2f",rs.getDouble("amount_paid")),
+                    rs.getString("payment_status")
+                });
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    private void updateCourseAnalysis(String cName) {
+        boolean all = cName.isEmpty() || cName.equals("-- All Courses --");
+        try {
+            // total institute revenue
+            pst = con.prepareStatement(
+                "SELECT COALESCE(SUM(amount_paid),0) total FROM fee_payments");
+            rs=pst.executeQuery();
+            double totalRev = rs.next() ? rs.getDouble("total") : 0;
+            
+
+            if (all) {
+
+                // Total Students
+                pst = con.prepareStatement(
+                    "SELECT COUNT(DISTINCT student_id) cnt FROM fee_payments");
+                rs = pst.executeQuery();
+            
+                int totalStudents = 0;
+            
+                if (rs.next()) {
+                    totalStudents = rs.getInt("cnt");
+                }
+            
+                lblCourseStudents.setText(String.valueOf(totalStudents));
+            
+                pst = con.prepareStatement(
+                    "SELECT COUNT(*) cnt FROM fee_payments");
+                
+                rs = pst.executeQuery();
+                
+                if(rs.next()) {
+                    lblCourseRevenue.setText(
+                        String.valueOf(rs.getInt("cnt")));
+                }
+
+                // Total Transactions
+                pst = con.prepareStatement(
+                    "SELECT COUNT(*) cnt FROM fee_payments");
+                rs = pst.executeQuery();
+            
+                int transactions = 0;
+            
+                if (rs.next()) {
+                    transactions = rs.getInt("cnt");
+                }
+
+                pst = con.prepareStatement(
+                    "SELECT c.course_name, SUM(fp.amount_paid) revenue " +
+                    "FROM fee_payments fp " +
+                    "JOIN fee_payment_courses fpc ON fp.id=fpc.fee_payment_id " +
+                    "JOIN courses c ON c.id=fpc.course_id " +
+                    "GROUP BY c.course_name " +
+                    "ORDER BY revenue DESC " +
+                    "LIMIT 1");
+                
+                rs = pst.executeQuery();
+                
+                if(rs.next()) {
+                    lblTotalRevenue.setText(
+                        rs.getString("course_name"));
+                }
+
+                // Average Revenue Per Student
+                double avgRevenue =
+                    totalStudents > 0
+                    ? totalRev / totalStudents
+                    : 0;
+            
+                lblAvgRevenue.setText(
+                    "₹ " + String.format("%,.2f", avgRevenue));
+            
+                // Top Revenue Course
+                pst = con.prepareStatement(
+                    "SELECT c.course_name, SUM(fp.amount_paid) revenue " +
+                    "FROM fee_payments fp " +
+                    "JOIN fee_payment_courses fpc ON fp.id=fpc.fee_payment_id " +
+                    "JOIN courses c ON c.id=fpc.course_id " +
+                    "GROUP BY c.course_name " +
+                    "ORDER BY revenue DESC " +
+                    "LIMIT 1");
+            
+                rs = pst.executeQuery();
+            
+                if (rs.next()) {
+                    lblCoursePercent.setText(rs.getString("100.00%"));
+                } else {
+                    lblCoursePercent.setText("—");
+                }
+            } else {
+                // specific course students
+                pst = con.prepareStatement(
+                    "SELECT COUNT(DISTINCT fpc.student_id) cnt FROM fee_payment_courses fpc " +
+                    "JOIN courses c ON fpc.course_id=c.id WHERE c.course_name=?");
+                pst.setString(1,cName); rs=pst.executeQuery();
+                int stuCount = rs.next() ? rs.getInt("cnt") : 0;
+                lblCourseStudents.setText(String.valueOf(stuCount));
+
+                // course revenue
+                pst = con.prepareStatement(
+                    "SELECT COALESCE(SUM(fp.amount_paid),0) rev FROM fee_payments fp " +
+                    "JOIN fee_payment_courses fpc ON fpc.fee_payment_id=fp.id " +
+                    "JOIN courses c ON fpc.course_id=c.id WHERE c.course_name=?");
+                pst.setString(1,cName); rs=pst.executeQuery();
+                double cRev = rs.next() ? rs.getDouble("rev") : 0;
+                
+                pst = con.prepareStatement(
+                    "SELECT COUNT(DISTINCT fp.id) cnt " +
+                    "FROM fee_payments fp" +
+                    "JOIN fee_payment_courses fpc ON fp.id=fpc.fee_payment_id " +
+                    "JOIN courses c ON c.id=fpc.course_id " +
+                    "WHERE c.course_name=?");
+                
+                pst.setString(1,cName);
+                
+                rs = pst.executeQuery();
+                
+                if(rs.next()) {
+                    lblCourseRevenue.setText(
+                        String.valueOf(rs.getInt("cnt")));
+                }
+
+                double pct = totalRev>0 ? (cRev/totalRev)*100.0 : 0;
+                lblCoursePercent.setText(String.format("%.2f%%", pct));
+
+                pst = con.prepareStatement(
+                    "SELECT c.course_name, SUM(fp.amount_paid) revenue " +
+                    "FROM fee_payments fp " +
+                    "JOIN fee_payment_courses fpc ON fp.id=fpc.fee_payment_id " +
+                    "JOIN courses c ON c.id=fpc.course_id " +
+                    "GROUP BY c.course_name " +
+                    "ORDER BY revenue DESC " +
+                    "LIMIT 1");
+                
+                rs = pst.executeQuery();
+                
+                if(rs.next()) {
+                    lblTotalRevenue.setText(
+                        rs.getString("course_name"));
+                }
+
+                double avg = stuCount>0 ? cRev/stuCount : 0;
+                lblAvgRevenue.setText("₹ "+String.format("%,.2f", avg));
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+    }
+
+    // ─────────────────────────────────────────
+    //  SUMMARY CARDS (top 4)
+    // ─────────────────────────────────────────
+    private void updateSummaryCards() {
+        try {
+            pst = con.prepareStatement(
+                "SELECT " +
+                "(SELECT COALESCE(SUM(amount_paid),0) FROM fee_payments) total, " +
+                "(SELECT COUNT(DISTINCT student_id) FROM fee_payments) students, " +
+                "(SELECT COUNT(*) FROM courses) courses, " +
+                "(SELECT COUNT(*) FROM fee_payments) transactions"
+            );
+            rs=pst.executeQuery();
+            if (rs.next()) {
+                lblTotalCollection.setText(String.format("₹ %,.2f",rs.getDouble("total")));
+                lblTotalStudents  .setText(String.valueOf(rs.getInt("students")));
+                lblTotalCourses   .setText(String.valueOf(rs.getInt("courses")));
+                lblTotalPayments  .setText(String.valueOf(rs.getInt("transactions")));
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
     }
 
     // ─────────────────────────────────────────
@@ -542,11 +667,9 @@ public class FeesCollectionReport extends JFrame {
         try {
             pst = con.prepareStatement(
                 "SELECT DISTINCT s.name FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id " +
-                "ORDER BY s.name");
-            rs = pst.executeQuery();
-            while (rs.next())
-                studentBox.addItem(rs.getString("name"));
+                "JOIN students s ON fp.student_id=s.id ORDER BY s.name");
+            rs=pst.executeQuery();
+            while (rs.next()) studentBox.addItem(rs.getString("name"));
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
@@ -554,726 +677,114 @@ public class FeesCollectionReport extends JFrame {
         courseBox.removeAllItems();
         courseBox.addItem("-- All Courses --");
         try {
-            pst = con.prepareStatement(
-                "SELECT course_name FROM courses ORDER BY course_name");
-            rs = pst.executeQuery();
-            while (rs.next())
-                courseBox.addItem(rs.getString("course_name"));
+            pst = con.prepareStatement("SELECT course_name FROM courses ORDER BY course_name");
+            rs=pst.executeQuery();
+            while (rs.next()) courseBox.addItem(rs.getString("course_name"));
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
     // ─────────────────────────────────────────
-    //  GET DATE FROM SPINNER
+    //  HELPERS
     // ─────────────────────────────────────────
-    private String getSpinnerDate(JSpinner spinner) {
-        java.util.Date d = (java.util.Date) spinner.getValue();
-        java.text.SimpleDateFormat sdf =
-            new java.text.SimpleDateFormat("yyyy-MM-dd");
-        return sdf.format(d);
+    private JSpinner dateSpinner() {
+        JSpinner s = new JSpinner(new SpinnerDateModel());
+        s.setEditor(new JSpinner.DateEditor(s,"dd-MM-yyyy"));
+        s.setFont(new Font("Segoe UI",Font.PLAIN,13));
+        return s;
     }
 
-    // ─────────────────────────────────────────
-    //  UPDATE COLUMNS
-    // ─────────────────────────────────────────
-    private void updateTableColumns() {
-        String view = viewByBox.getSelectedItem().toString();
-        reportModel.setRowCount(0);
-        switch (view) {
-            case "Date Wise":
-                reportModel.setColumnIdentifiers(new String[]{
-                    "#","Date","Student","Courses",
-                    "Mode","Discount","Amount Paid","Status"});
-                break;
-            case "Student Wise":
-                reportModel.setColumnIdentifiers(new String[]{
-                    "#","Payment Date","Courses Paid",
-                    "Mode","Discount","Amount Paid","Status"});
-                break;
-            case "Course Wise":
-                reportModel.setColumnIdentifiers(new String[]{
-                    "#","Student","Payment Date",
-                    "Mode","Amount Paid","Status"});
-                break;
-        }
+    private void resetSpinner(JSpinner sp, int days) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DAY_OF_MONTH, days);
+        sp.setValue(c.getTime());
     }
 
-    // ==========================================================
-// ANALYTICS CARD
-// ==========================================================
-
-private JLabel createAnalyticsCard(
-        JPanel parent,
-        String title,
-        String value,
-        Color color,
-        int x,
-        int y
-) {
-
-    JPanel card = new JPanel(null);
-
-    card.setBackground(color);
-
-    card.setBounds(x, y, 240, 120);
-
-    parent.add(card);
-
-    JLabel lblTitle = new JLabel(title);
-
-    lblTitle.setForeground(Color.WHITE);
-
-    lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-    lblTitle.setBounds(15, 15, 200, 20);
-
-    card.add(lblTitle);
-
-    JLabel lblValue = new JLabel(value);
-
-    lblValue.setForeground(Color.WHITE);
-
-    lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
-
-    lblValue.setBounds(15, 50, 210, 35);
-
-    card.add(lblValue);
-
-    return lblValue;
-}
-
-// ==========================================================
-// SUMMARY TEXT
-// ==========================================================
-
-private JLabel summaryText(
-        JPanel panel,
-        String heading,
-        String value,
-        int x
-) {
-
-    JLabel h = new JLabel(heading);
-
-    h.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-
-    h.setBounds(x, 18, 180, 20);
-
-    panel.add(h);
-
-    JLabel v = new JLabel(value);
-
-    v.setFont(new Font("Segoe UI", Font.BOLD, 20));
-
-    v.setForeground(new Color(0,102,204));
-
-    v.setBounds(x, 42, 220, 30);
-
-    panel.add(v);
-
-    return v;
-}
-
-
-
-    // ─────────────────────────────────────────
-    //  GENERATE REPORT
-    // ─────────────────────────────────────────
-    public void generateReport() {
-
-        String view =
-                viewByBox.getSelectedItem().toString();
-    
-        boolean courseWise =
-                view.equals("Course Wise");
-    
-        reportScroll.setBounds(
-                30,
-                view.equals("Student Wise")
-                        ? 450
-                        : courseWise
-                        ? 360
-                        : 430,
-                1120,
-                view.equals("Student Wise")
-                        ? 400
-                        : courseWise
-                        ? 340
-                        : 270
-        );
-    
-        updateTableColumns();
-    
-        switch (view) {
-    
-            case "Date Wise":
-    
-                analyticsPanel.setVisible(true);
-                studentSummaryPanel.setVisible(false);
-    
-                loadDateWise(
-                        getSpinnerDate(spinFrom),
-                        getSpinnerDate(spinTo)
-                );
-    
-                updateDateWiseAnalytics(
-                        getSpinnerDate(spinFrom),
-                        getSpinnerDate(spinTo)
-                );
-    
-                break;
-    
-            case "Student Wise":
-    
-                analyticsPanel.setVisible(false);
-                studentSummaryPanel.setVisible(true);
-    
-                loadStudentWise(
-                        studentBox.getSelectedItem() != null
-                                ? studentBox.getSelectedItem().toString()
-                                : "",
-                        getSpinnerDate(spinStudentFrom),
-                        getSpinnerDate(spinStudentTo)
-                );
-    
-                updateStudentSummary(
-                        studentBox.getSelectedItem().toString()
-                );
-    
-                break;
-    
-            case "Course Wise":
-    
-                analyticsPanel.setVisible(false);
-                studentSummaryPanel.setVisible(false);
-    
-                loadCourseWise(
-                        courseBox.getSelectedItem() != null
-                                ? courseBox.getSelectedItem().toString()
-                                : ""
-                );
-    
-                updateCourseAnalysis();
-    
-                break;
-        }
-    
-        updateSummaryCards();
-    
-        TableUtils.resizeColumnWidth(reportTable);
-
-        
-    }
-    
-    // ─────────────────────────────────────────
-    //  DATE WISE
-    // ─────────────────────────────────────────
-    private void loadDateWise(String from, String to) {
-        try {
-            String q =
-                "SELECT fp.paid_at, s.name, " +
-                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
-                "fp.payment_mode, fp.discount_amt, fp.amount_paid, fp.payment_status " +
-                "FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id " +
-                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
-                "LEFT JOIN courses c ON fpc.course_id = c.id " +
-                "WHERE DATE(fp.paid_at) BETWEEN ? AND ? " +
-                "GROUP BY fp.id, fp.paid_at, s.name, fp.payment_mode, " +
-                "fp.discount_amt, fp.amount_paid, fp.payment_status " +
-                "ORDER BY fp.paid_at DESC";
-
-            pst = con.prepareStatement(q);
-            pst.setString(1, from);
-            pst.setString(2, to);
-            rs = pst.executeQuery();
-
-            int row = 1;
-            while (rs.next()) {
-                Timestamp ts = rs.getTimestamp("paid_at");
-                String date = ts != null
-                    ? ts.toLocalDateTime().format(DISP_FMT) : "—";
-                double disc = rs.getDouble("discount_amt");
-                reportModel.addRow(new Object[]{
-                    row++, date,
-                    rs.getString("s.name"),
-                    rs.getString("courses") != null ? rs.getString("courses") : "—",
-                    rs.getString("payment_mode"),
-                    disc > 0 ? String.format("- ₹ %,.2f", disc) : "—",
-                    String.format("₹ %,.2f", rs.getDouble("amount_paid")),
-                    rs.getString("payment_status")
-                });
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
+    private void setStudentDefaultDates() {
+        Calendar to=Calendar.getInstance(), from=Calendar.getInstance();
+        from.add(Calendar.YEAR,-1);
+        spinStudentTo.setValue(to.getTime());
+        spinStudentFrom.setValue(from.getTime());
     }
 
-    private void updateDateWiseAnalytics(
-        String from,
-        String to
-) {
-
-    try {
-
-        // ==================================================
-        // HIGHEST COLLECTION DAY
-        // ==================================================
-
-        pst = con.prepareStatement(
-
-                "SELECT DATE(paid_at) d, " +
-                "SUM(amount_paid) total " +
-                "FROM fee_payments " +
-                "WHERE DATE(paid_at) BETWEEN ? AND ? " +
-                "GROUP BY DATE(paid_at) " +
-                "ORDER BY total DESC " +
-                "LIMIT 1"
-        );
-
-        pst.setString(1, from);
-
-        pst.setString(2, to);
-
-        rs = pst.executeQuery();
-
-        if(rs.next()) {
-
-            lblHighestDay.setText(
-                    rs.getString("d") +
-                    " | ₹ " +
-                    String.format("%,.2f",
-                            rs.getDouble("total"))
-            );
-        }
-
-        // ==================================================
-        // AVERAGE COLLECTION
-        // ==================================================
-
-        pst = con.prepareStatement(
-
-                "SELECT AVG(day_total) avg_amt " +
-                "FROM (" +
-                "SELECT SUM(amount_paid) day_total " +
-                "FROM fee_payments " +
-                "WHERE DATE(paid_at) BETWEEN ? AND ? " +
-                "GROUP BY DATE(paid_at)" +
-                ") x"
-        );
-
-        pst.setString(1, from);
-
-        pst.setString(2, to);
-
-        rs = pst.executeQuery();
-
-        if(rs.next()) {
-
-            lblAverageDay.setText(
-                    "₹ " +
-                    String.format("%,.2f",
-                            rs.getDouble("avg_amt"))
-            );
-        }
-
-        // ==================================================
-        // PENDING PAYMENTS
-        // ==================================================
-
-        pst = con.prepareStatement(
-
-                "SELECT COUNT(*) cnt " +
-                "FROM fee_payments " +
-                "WHERE payment_status != 'Paid'"
-        );
-
-        rs = pst.executeQuery();
-
-        if(rs.next()) {
-
-            lblPendingPayments.setText(
-                    String.valueOf(rs.getInt("cnt"))
-            );
-        }
-
-        // ==================================================
-        // TOP COURSE
-        // ==================================================
-
-        pst = con.prepareStatement(
-
-                "SELECT c.course_name, " +
-                "SUM(fp.amount_paid) total " +
-                "FROM fee_payments fp " +
-                "JOIN fee_payment_courses fpc " +
-                "ON fpc.fee_payment_id = fp.id " +
-                "JOIN courses c " +
-                "ON c.id = fpc.course_id " +
-                "GROUP BY c.course_name " +
-                "ORDER BY total DESC " +
-                "LIMIT 1"
-        );
-
-        rs = pst.executeQuery();
-
-        if(rs.next()) {
-
-            lblTopCourse.setText(
-                    rs.getString("course_name")
-            );
-        }
-
-    }
-    catch(Exception ex) {
-
-        ex.printStackTrace();
-    }
-}
-
-
-    // ─────────────────────────────────────────
-    //  STUDENT WISE
-    // ─────────────────────────────────────────
-    private void loadStudentWise(String studentName,
-                                  String from, String to) {
-        try {
-            StringBuilder q = new StringBuilder(
-                "SELECT fp.paid_at, " +
-                "GROUP_CONCAT(c.course_name ORDER BY c.course_name SEPARATOR ', ') AS courses, " +
-                "fp.payment_mode, fp.discount_amt, fp.amount_paid, fp.payment_status " +
-                "FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id " +
-                "LEFT JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
-                "LEFT JOIN courses c ON fpc.course_id = c.id " +
-                "WHERE DATE(fp.paid_at) BETWEEN ? AND ? ");
-
-            if (!studentName.isEmpty() &&
-                !studentName.equals("-- All Students --"))
-                q.append("AND s.name = ? ");
-
-            q.append("GROUP BY fp.id, fp.paid_at, fp.payment_mode, " +
-                     "fp.discount_amt, fp.amount_paid, fp.payment_status " +
-                     "ORDER BY fp.paid_at DESC");
-
-            pst = con.prepareStatement(q.toString());
-            pst.setString(1, from);
-            pst.setString(2, to);
-            if (!studentName.isEmpty() &&
-                !studentName.equals("-- All Students --"))
-                pst.setString(3, studentName);
-
-            rs = pst.executeQuery();
-
-            int row = 1;
-            while (rs.next()) {
-                Timestamp ts = rs.getTimestamp("paid_at");
-                String date = ts != null
-                    ? ts.toLocalDateTime().format(DISP_FMT) : "—";
-                double disc = rs.getDouble("discount_amt");
-                reportModel.addRow(new Object[]{
-                    row++, date,
-                    rs.getString("courses") != null ? rs.getString("courses") : "—",
-                    rs.getString("payment_mode"),
-                    disc > 0 ? String.format("- ₹ %,.2f", disc) : "—",
-                    String.format("₹ %,.2f", rs.getDouble("amount_paid")),
-                    rs.getString("payment_status")
-                });
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
+    private String spinDate(JSpinner sp) {
+        java.util.Date d=(java.util.Date)sp.getValue();
+        return new java.text.SimpleDateFormat("yyyy-MM-dd").format(d);
     }
 
-    
-    private void updateStudentSummary(
-        String studentName
-) {
-
-    if(studentName.equals("-- All Students --")) {
-
-        studentSummaryPanel.setVisible(false);
-
-        return;
+    private JLabel label(String text, int x, int y) {
+        JLabel l = UIUtils.plain(text, 13);
+        l.setBounds(x, y, 80, 26);
+        return l;
     }
 
-    studentSummaryPanel.setVisible(true);
-
-    try {
-
-        pst = con.prepareStatement(
-
-                "SELECT " +
-                "SUM(fp.amount_paid) paid, " +
-                "SUM(fp.discount_amt) discount, " +
-                "MAX(fp.paid_at) last_payment " +
-                "FROM fee_payments fp " +
-                "JOIN students s " +
-                "ON s.id = fp.student_id " +
-                "WHERE s.name = ?"
-        );
-
-        pst.setString(1, studentName);
-
-        rs = pst.executeQuery();
-
-        if(rs.next()) {
-
-            double paid =
-                    rs.getDouble("paid");
-
-            double discount =
-                    rs.getDouble("discount");
-
-            Timestamp ts =
-                    rs.getTimestamp("last_payment");
-
-            lblStudentTotalPaid.setText(
-                    "₹ " +
-                    String.format("%,.2f", paid)
-            );
-
-            lblStudentTotalDiscount.setText(
-                    "₹ " +
-                    String.format("%,.2f", discount)
-            );
-
-            lblStudentPending.setText(
-                    "₹ 0"
-            );
-
-            lblStudentLastPayment.setText(
-                    ts != null
-                            ? ts.toLocalDateTime()
-                            .format(DISP_FMT)
-                            : "-"
-            );
-        }
-
-    }
-    catch(Exception ex) {
-
-        ex.printStackTrace();
-    }
-}
-
-    // ─────────────────────────────────────────
-    //  COURSE WISE
-    // ─────────────────────────────────────────
-    private void loadCourseWise(String courseName) {
-        try {
-            StringBuilder q = new StringBuilder(
-                "SELECT s.name, fp.paid_at, " +
-                "fp.payment_mode, fp.amount_paid, fp.payment_status " +
-                "FROM fee_payments fp " +
-                "JOIN students s ON fp.student_id = s.id " +
-                "JOIN fee_payment_courses fpc ON fpc.fee_payment_id = fp.id " +
-                "JOIN courses c ON fpc.course_id = c.id " +
-                "WHERE 1=1 ");
-
-            if (!courseName.isEmpty() &&
-                !courseName.equals("-- All Courses --"))
-                q.append("AND c.course_name = ? ");
-
-            q.append("ORDER BY fp.paid_at DESC");
-
-            pst = con.prepareStatement(q.toString());
-            if (!courseName.isEmpty() &&
-                !courseName.equals("-- All Courses --"))
-                pst.setString(1, courseName);
-
-            rs = pst.executeQuery();
-
-            int row = 1;
-            while (rs.next()) {
-                Timestamp ts = rs.getTimestamp("paid_at");
-                String date = ts != null
-                    ? ts.toLocalDateTime().format(DISP_FMT) : "—";
-                reportModel.addRow(new Object[]{
-                    row++,
-                    rs.getString("s.name"),
-                    date,
-                    rs.getString("payment_mode"),
-                    String.format("₹ %,.2f", rs.getDouble("amount_paid")),
-                    rs.getString("payment_status")
-                });
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
-
-    // ─────────────────────────────────────────
-    //  SUMMARY CARDS
-    // ─────────────────────────────────────────
-    private void updateSummaryCards() {
-        try {
-            pst = con.prepareStatement(
-                "SELECT " +
-                "SUM(fp.amount_paid)           AS total, " +
-                "COUNT(DISTINCT fp.student_id) AS students, " +
-                "COUNT(DISTINCT fpc.course_id) AS courses, " +
-                "COUNT(fp.id)                  AS transactions " +
-                "FROM fee_payments fp " +
-                "LEFT JOIN fee_payment_courses fpc " +
-                "  ON fpc.fee_payment_id = fp.id");
-            rs = pst.executeQuery();
-            if (rs.next()) {
-                lblTotalCollection.setText(
-                    String.format("₹ %,.2f", rs.getDouble("total")));
-                lblTotalStudents.setText(
-                    String.valueOf(rs.getInt("students")));
-                lblTotalCourses.setText(
-                    String.valueOf(rs.getInt("courses")));
-                lblTotalPayments.setText(
-                    String.valueOf(rs.getInt("transactions")));
-            }
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
-
-    // ─────────────────────────────────────────
-    //  SUMMARY CARD HELPER
-    // ─────────────────────────────────────────
-    private JLabel summaryCard(JPanel parent, String heading,
-                                String value, Color color,
-                                int x, int y) {
+    // ── coloured summary card (top row) ──
+    private JLabel summaryCard(JPanel p, String head, String val, Color bg, int x, int y) {
         JPanel card = new JPanel(null);
-        card.setBackground(color);
+        card.setBackground(bg);
         card.setBounds(x, y, 245, 80);
+        p.add(card);
+        JLabel h = new JLabel(head);
+        h.setFont(new Font("Segoe UI",Font.PLAIN,12));
+        h.setForeground(new Color(220,220,220));
+        h.setBounds(14,10,220,20);
+        card.add(h);
+        JLabel v = new JLabel(val);
+        v.setFont(new Font("Segoe UI",Font.BOLD,20));
+        v.setForeground(Color.WHITE);
+        v.setBounds(14,34,220,32);
+        card.add(v);
+        return v;
+    }
+
+    // ── grey strip container ──
+    private JPanel strip(JPanel parent, int x, int y, int w, int h) {
+        JPanel p = new JPanel(null);
+        p.setBackground(new Color(245,247,250));
+        p.setBorder(BorderFactory.createLineBorder(new Color(210,215,220)));
+        p.setBounds(x,y,w,h);
+        parent.add(p);
+        return p;
+    }
+
+    // ── white card inside strip ──
+    // index 0-3 = 4 equal cards; index 4 = 5th card (narrower)
+    private JLabel statCard(JPanel parent, String head, String val, Color accent, int index) {
+        int total  = parent.getPreferredSize().width > 0
+            ? parent.getPreferredSize().width : 1120;
+        int count  = 5; // always 5 slots wide; unused slots stay empty
+        int cardW  = 270;
+        int gap    = 8;
+        int x      = gap + index*(cardW+gap);
+
+        JPanel card = new JPanel(null) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setColor(accent);
+                g.fillRect(0,0,5,getHeight());
+            }
+        };
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+        card.setBounds(x, 10, cardW, 100);
         parent.add(card);
 
-        JLabel lHead = new JLabel(heading);
-        lHead.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lHead.setForeground(new Color(220, 220, 220));
-        lHead.setBounds(14, 10, 220, 20);
+        JPanel dot = new JPanel();
+        dot.setBackground(accent);
+        dot.setBounds(14,14,7,7);
+        card.add(dot);
+
+        JLabel lHead = new JLabel(head.toUpperCase());
+        lHead.setFont(new Font("Segoe UI",Font.PLAIN,10));
+        lHead.setForeground(new Color(130,130,140));
+        lHead.setBounds(28,11,cardW-32,16);
         card.add(lHead);
 
-        JLabel lVal = new JLabel(value);
-        lVal.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        lVal.setForeground(Color.WHITE);
-        lVal.setBounds(14, 34, 220, 32);
+        JLabel lVal = new JLabel(val);
+        lVal.setFont(new Font("Segoe UI",Font.BOLD,18));
+        lVal.setForeground(new Color(30,30,40));
+        lVal.setBounds(14,34,cardW-18,50);
         card.add(lVal);
 
         return lVal;
     }
-
-    // ─────────────────────────────────────────
-    //  COURSE ANALYSIS
-    // ─────────────────────────────────────────
-    private void updateCourseAnalysis() {
-
-        String courseName = courseBox.getSelectedItem() != null
-            ? courseBox.getSelectedItem().toString() : "";
-
-        boolean allCourses = courseName.isEmpty()
-            || courseName.equals("-- All Courses --");
-
-        try {
-            // ── Total institute revenue ──
-            pst = con.prepareStatement(
-                "SELECT COALESCE(SUM(amount_paid), 0) AS total " +
-                "FROM fee_payments");
-            rs = pst.executeQuery();
-            double totalRevenue = 0.0;
-            if (rs.next()) totalRevenue = rs.getDouble("total");
-            lblTotalRevenue.setText(
-                String.format("₹ %,.2f", totalRevenue));
-
-            if (allCourses) {
-                // show totals for all courses
-                lblCourseStudents.setText(
-                    String.valueOf(
-                        (int) getCount(
-                            "SELECT COUNT(DISTINCT student_id) " +
-                            "FROM fee_payment_courses")));
-                lblCourseRevenue.setText(
-                    String.format("₹ %,.2f", totalRevenue));
-                lblCoursePercent.setText("100.00%");
-
-            // ==========================================================
-            // AVERAGE REVENUE PER STUDENT
-            // ==========================================================
-
-            JLabel avgTitle = UIUtils.plain(
-                    "Avg Revenue / Student:",
-                    12
-            );
-
-            avgTitle.setBounds(900, 24, 180, 20);
-
-            courseAnalysisPanel.add(avgTitle);
-
-            lblAverageRevenuePerStudent =
-                    UIUtils.bold("₹ 0", 16);
-
-            lblAverageRevenuePerStudent.setForeground(
-                    new Color(0,102,204)
-            );
-
-            lblAverageRevenuePerStudent.setBounds(
-                    900,
-                    44,
-                    180,
-                    24
-            );
-
-            courseAnalysisPanel.add(
-                    lblAverageRevenuePerStudent
-            );
-
-                lblCoursePercentBar.setBounds(680, 78, 400, 18);
-                return;
-            }
-
-            // ── Students enrolled in this course ──
-            pst = con.prepareStatement(
-                "SELECT COUNT(DISTINCT fpc.student_id) AS cnt " +
-                "FROM fee_payment_courses fpc " +
-                "JOIN courses c ON fpc.course_id = c.id " +
-                "WHERE c.course_name = ?");
-            pst.setString(1, courseName);
-            rs = pst.executeQuery();
-            int studentCount = 0;
-            if (rs.next()) studentCount = rs.getInt("cnt");
-            lblCourseStudents.setText(String.valueOf(studentCount));
-
-            // ── Revenue from this course ──
-            pst = con.prepareStatement(
-                "SELECT COALESCE(SUM(fp.amount_paid), 0) AS rev " +
-                "FROM fee_payments fp " +
-                "JOIN fee_payment_courses fpc " +
-                "  ON fpc.fee_payment_id = fp.id " +
-                "JOIN courses c ON fpc.course_id = c.id " +
-                "WHERE c.course_name = ?");
-            pst.setString(1, courseName);
-            rs = pst.executeQuery();
-            double courseRevenue = 0.0;
-            if (rs.next()) courseRevenue = rs.getDouble("rev");
-            lblCourseRevenue.setText(
-                String.format("₹ %,.2f", courseRevenue));
-
-            // ── Percentage ──
-            double percent = totalRevenue > 0
-                ? (courseRevenue / totalRevenue) * 100.0 : 0.0;
-            lblCoursePercent.setText(
-                String.format("%.2f%%", percent));
-
-                double avgRevenue =
-                studentCount > 0
-                        ? courseRevenue / studentCount
-                        : 0;
-        
-        lblAverageRevenuePerStudent.setText(
-                "₹ " +
-                String.format("%,.2f", avgRevenue)
-        );
-        
-            
-            // ── Progress bar width (max 400px = 100%) ──
-            int barWidth = (int) Math.round(percent * 4.0); // 4px per 1%
-            barWidth = Math.min(barWidth, 400);
-            lblCoursePercentBar.setBounds(680, 78, barWidth, 18);
-
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
-
-    private double getCount(String query) throws Exception {
-        pst = con.prepareStatement(query);
-        rs  = pst.executeQuery();
-        return rs.next() ? rs.getDouble(1) : 0;
-    }
-
 }
