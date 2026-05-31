@@ -39,7 +39,7 @@
 
 ## Fees Collection Report - Student Wise
 
-
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/47d5cf09-d296-4e0c-a5bb-a48486eb04c4" />
 
 ## Fees Collection Report - Course Wise
 
