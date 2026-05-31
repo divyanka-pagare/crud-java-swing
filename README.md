@@ -35,7 +35,7 @@
 
 ## Fees Collection Report - Date Wise
 
-
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/fc63d2a5-51bb-4da6-b1d7-f03a0f4b2dd3" />
 
 ## Fees Collection Report - Student Wise
 
