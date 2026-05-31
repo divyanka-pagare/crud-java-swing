@@ -33,15 +33,19 @@
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/16d7c817-0ecc-4c73-accf-254054d92c41" />
 
+
 ## Fees Collection Report - Date Wise
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/fc63d2a5-51bb-4da6-b1d7-f03a0f4b2dd3" />
+
 
 ## Fees Collection Report - Student Wise
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/47d5cf09-d296-4e0c-a5bb-a48486eb04c4" />
 
+
 ## Fees Collection Report - Course Wise
 
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/88b819dc-c62a-42a8-bba2-2ee5f84a9104" />
 
 
