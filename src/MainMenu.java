@@ -49,9 +49,21 @@ public class MainMenu extends JFrame {
         transaction.add(createMenuItem("Course Enrollment",     () -> UIUtils.openFullScreen(new CourseSelectionForm())));
         transaction.add(createMenuItem("Fees Receipt",          () -> UIUtils.openFullScreen(new FeesReceiptForm())));
         transaction.add(createMenuItem("Student Enquiry",       () -> UIUtils.openFullScreen(new StudentEnquiryForm())));
-        transaction.add(createMenuItem("Mark Attendance",       () -> UIUtils.openFullScreen(new AttendanceForm())));
-        
         menuBar.add(transaction);
+
+        // ATTENDANCE
+        JMenu attendance = createMenu("Attendance");
+        attendance.add(createMenuItem("Daily Attendance",            () -> UIUtils.openFullScreen(new AttendanceForm())));
+        attendance.add(createMenuItem("Monthly Attendance Report",   () -> UIUtils.openFullScreen(new MonthlyAttendanceReportForm())));
+        attendance.add(createMenuItem("Attendance Percentage",       () -> UIUtils.openFullScreen(new AttendancePercentageForm())));
+        attendance.add(createMenuItem("Defaulter List",              () -> UIUtils.openFullScreen(new DefaulterListForm())));
+        attendance.add(createMenuItem("Course-wise Attendance",      () -> UIUtils.openFullScreen(new CourseWiseAttendanceForm())));
+        attendance.add(createMenuItem("Teacher-wise Attendance",     () -> UIUtils.openFullScreen(new TeacherWiseAttendanceForm())));
+        attendance.add(createMenuItem("Export Attendance",           () -> UIUtils.openFullScreen(new ExportAttendanceForm())));
+        attendance.add(createMenuItem("Dashboard Statistics",        () -> UIUtils.openFullScreen(new AttendanceDashboardForm())));
+        menuBar.add(attendance);
+        
+        
 
         // REPORT
         JMenu report = createMenu("Report");
@@ -114,7 +126,7 @@ public class MainMenu extends JFrame {
         centerPanel.add(Box.createRigidArea(new Dimension(0, 50)));
 
         // ───────────────── QUICK ACTION CARDS ─────────────────
-        JPanel cardsPanel = new JPanel(new GridLayout(2, 2, 25, 25));
+        JPanel cardsPanel = new JPanel(new GridLayout(1, 2, 25, 25));
         cardsPanel.setBackground(BACKGROUND);
         cardsPanel.setMaximumSize(new Dimension(700, 300));
 
@@ -124,19 +136,9 @@ public class MainMenu extends JFrame {
                 () -> new RegistrationForm()));
 
         cardsPanel.add(createCard(
-                "Course Enrollment",
-                "Enroll students in courses",
-                () -> new CourseSelectionForm()));
-
-        cardsPanel.add(createCard(
-                "Fees Receipt",
-                "Manage fee payments",
-                () -> new FeesReceiptForm()));
-
-        cardsPanel.add(createCard(
-                "Student Enquiry",
-                "Handle student enquiries",
-                () -> new StudentEnquiryForm()));
+                "Student Attendance",
+                "Manage student attendance",
+                () -> new AttendanceForm()));
 
         centerPanel.add(cardsPanel);
 
