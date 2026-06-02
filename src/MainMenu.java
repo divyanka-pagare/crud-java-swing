@@ -2,6 +2,7 @@ package src;
 
 import src.forms.master.CourseForm;
 import src.forms.master.TeacherForm;
+import src.forms.transaction.AttendanceForm;
 import src.forms.transaction.CourseSelectionForm;
 import src.forms.transaction.FeesReceiptForm;
 import src.forms.transaction.RegistrationForm;
@@ -48,6 +49,8 @@ public class MainMenu extends JFrame {
         transaction.add(createMenuItem("Course Enrollment",     () -> UIUtils.openFullScreen(new CourseSelectionForm())));
         transaction.add(createMenuItem("Fees Receipt",          () -> UIUtils.openFullScreen(new FeesReceiptForm())));
         transaction.add(createMenuItem("Student Enquiry",       () -> UIUtils.openFullScreen(new StudentEnquiryForm())));
+        transaction.add(createMenuItem("Mark Attendance",       () -> UIUtils.openFullScreen(new AttendanceForm())));
+        
         menuBar.add(transaction);
 
         // REPORT
