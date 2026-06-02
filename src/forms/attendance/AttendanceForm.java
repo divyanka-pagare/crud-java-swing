@@ -1,4 +1,4 @@
-package src.forms.transaction;
+package src.forms.attendance;
 
 import src.db.DBConnection;
 import src.models.Course;
