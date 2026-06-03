@@ -1,4 +1,4 @@
-# Registration-form-java-swing
+# Class Management System java-swing
 
 ## Main Menu
 
