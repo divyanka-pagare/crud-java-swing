@@ -1,8 +1,9 @@
 package src;
 
+import src.forms.attendance.AttendanceForm;
+import src.forms.attendance.AttendanceReport;
 import src.forms.master.CourseForm;
 import src.forms.master.TeacherForm;
-import src.forms.transaction.AttendanceForm;
 import src.forms.transaction.CourseSelectionForm;
 import src.forms.transaction.FeesReceiptForm;
 import src.forms.transaction.RegistrationForm;
@@ -53,14 +54,16 @@ public class MainMenu extends JFrame {
 
         // ATTENDANCE
         JMenu attendance = createMenu("Attendance");
-        attendance.add(createMenuItem("Daily Attendance",            () -> UIUtils.openFullScreen(new AttendanceForm())));
-        attendance.add(createMenuItem("Monthly Attendance Report",   () -> UIUtils.openFullScreen(new MonthlyAttendanceReportForm())));
-        attendance.add(createMenuItem("Attendance Percentage",       () -> UIUtils.openFullScreen(new AttendancePercentageForm())));
-        attendance.add(createMenuItem("Defaulter List",              () -> UIUtils.openFullScreen(new DefaulterListForm())));
-        attendance.add(createMenuItem("Course-wise Attendance",      () -> UIUtils.openFullScreen(new CourseWiseAttendanceForm())));
-        attendance.add(createMenuItem("Teacher-wise Attendance",     () -> UIUtils.openFullScreen(new TeacherWiseAttendanceForm())));
-        attendance.add(createMenuItem("Export Attendance",           () -> UIUtils.openFullScreen(new ExportAttendanceForm())));
-        attendance.add(createMenuItem("Dashboard Statistics",        () -> UIUtils.openFullScreen(new AttendanceDashboardForm())));
+        // attendance.add(createMenuItem("Daily Attendance",            () -> UIUtils.openFullScreen(new AttendanceForm())));
+        attendance.add(createMenuItem("Mark Attendance",           () -> UIUtils.openFullScreen(new AttendanceForm())));
+        attendance.add(createMenuItem("Attendance Report",         () -> UIUtils.openFullScreen(new AttendanceReport())));
+        // attendance.add(createMenuItem("Monthly Attendance Report",   () -> UIUtils.openFullScreen(new MonthlyAttendanceReportForm())));
+        // attendance.add(createMenuItem("Attendance Percentage",       () -> UIUtils.openFullScreen(new AttendancePercentageForm())));
+        // attendance.add(createMenuItem("Defaulter List",              () -> UIUtils.openFullScreen(new DefaulterListForm())));
+        // attendance.add(createMenuItem("Course-wise Attendance",      () -> UIUtils.openFullScreen(new CourseWiseAttendanceForm())));
+        // attendance.add(createMenuItem("Teacher-wise Attendance",     () -> UIUtils.openFullScreen(new TeacherWiseAttendanceForm())));
+        // attendance.add(createMenuItem("Export Attendance",           () -> UIUtils.openFullScreen(new ExportAttendanceForm())));
+        // attendance.add(createMenuItem("Dashboard Statistics",        () -> UIUtils.openFullScreen(new AttendanceDashboardForm())));
         menuBar.add(attendance);
         
         
