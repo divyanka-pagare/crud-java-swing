@@ -129,9 +129,12 @@ public class MainMenu extends JFrame {
         centerPanel.add(Box.createRigidArea(new Dimension(0, 50)));
 
         // ───────────────── QUICK ACTION CARDS ─────────────────
-        JPanel cardsPanel = new JPanel(new GridLayout(1, 2, 25, 25));
+        JPanel cardsPanel = new JPanel(
+            new FlowLayout(FlowLayout.CENTER, 30, 20)
+        );
         cardsPanel.setBackground(BACKGROUND);
-        cardsPanel.setMaximumSize(new Dimension(700, 300));
+
+        cardsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         cardsPanel.add(createCard(
                 "Student Registration",
@@ -184,16 +187,22 @@ public class MainMenu extends JFrame {
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(220, 220, 220)),
-                new EmptyBorder(20, 20, 20, 20)
+                new EmptyBorder(12, 15, 12, 15)
         ));
+
+        card.setPreferredSize(new Dimension(240, 140)); 
+        card.setMaximumSize(new Dimension(240, 140));
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         titleLabel.setForeground(PRIMARY);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel subLabel = new JLabel(subtitle);
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         subLabel.setForeground(Color.GRAY);
+        subLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
 
         JButton openBtn = new JButton("Open");
         openBtn.setFocusPainted(false);
@@ -201,13 +210,15 @@ public class MainMenu extends JFrame {
         openBtn.setForeground(Color.WHITE);
         openBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         openBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        openBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        openBtn.setPreferredSize(new Dimension(80, 28));
 
         openBtn.addActionListener(e -> action.run());
 
         card.add(titleLabel);
         card.add(Box.createRigidArea(new Dimension(0, 10)));
         card.add(subLabel);
-        card.add(Box.createVerticalGlue());
         card.add(Box.createRigidArea(new Dimension(0, 20)));
         card.add(openBtn);
 
