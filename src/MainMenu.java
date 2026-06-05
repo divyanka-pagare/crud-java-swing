@@ -2,6 +2,7 @@ package src;
 
 import src.forms.attendance.AttendanceForm;
 import src.forms.attendance.AttendanceReport;
+import src.forms.attendance.TodayAttendanceLog;
 import src.forms.master.CourseForm;
 import src.forms.master.TeacherForm;
 import src.forms.transaction.CourseSelectionForm;
@@ -54,9 +55,11 @@ public class MainMenu extends JFrame {
 
         // ATTENDANCE
         JMenu attendance = createMenu("Attendance");
-        // attendance.add(createMenuItem("Daily Attendance",            () -> UIUtils.openFullScreen(new AttendanceForm())));
+        
         attendance.add(createMenuItem("Mark Attendance",           () -> UIUtils.openFullScreen(new AttendanceForm())));
+        attendance.add(createMenuItem("Today's Log",               () -> UIUtils.openFullScreen(new TodayAttendanceLog())));      
         attendance.add(createMenuItem("Attendance Report",         () -> UIUtils.openFullScreen(new AttendanceReport())));
+        
         // attendance.add(createMenuItem("Monthly Attendance Report",   () -> UIUtils.openFullScreen(new MonthlyAttendanceReportForm())));
         // attendance.add(createMenuItem("Attendance Percentage",       () -> UIUtils.openFullScreen(new AttendancePercentageForm())));
         // attendance.add(createMenuItem("Defaulter List",              () -> UIUtils.openFullScreen(new DefaulterListForm())));

@@ -85,6 +85,10 @@ public class AttendanceForm extends JFrame {
         JLabel lCourse = UIUtils.plain("Course:", 13);
         lCourse.setBounds(15, 22, 60, 26);
         filterBar.add(lCourse);
+        logCourseFilter = new JComboBox<>();
+        logCourseFilter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        logCourseFilter.setBounds(920, 238, 230, 28);
+        main.add(logCourseFilter);
 
         courseBox = new JComboBox<>();
         courseBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -242,13 +246,13 @@ public class AttendanceForm extends JFrame {
         // ─────────────────────────────────────────
         //  RIGHT — RECENT ATTENDANCE LOG
         // ─────────────────────────────────────────
-        JLabel lLogTitle = UIUtils.bold("Recent Attendance Log", 14);
-        lLogTitle.setBounds(730, 238, 280, 28);
-        main.add(lLogTitle);
+        // JLabel lLogTitle = UIUtils.bold("Recent Attendance Log", 14);
+        // lLogTitle.setBounds(730, 238, 280, 28);
+        // main.add(lLogTitle);
 
-        JLabel lLogFilter = UIUtils.plain("Filter:", 12);
-        lLogFilter.setBounds(730, 242, 45, 20);
-        main.add(lLogFilter);
+        // JLabel lLogFilter = UIUtils.plain("Filter:", 12);
+        // lLogFilter.setBounds(730, 242, 45, 20);
+        // main.add(lLogFilter);
 
         logCourseFilter = new JComboBox<>();
         logCourseFilter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -282,50 +286,65 @@ public class AttendanceForm extends JFrame {
             }
         };
 
-        logTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        logTable.setRowHeight(34);
-        logTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        logTable.getTableHeader().setBackground(new Color(0, 102, 204));
-        logTable.getTableHeader().setForeground(Color.WHITE);
-        logTable.setGridColor(new Color(230, 230, 230));
-        logTable.setShowVerticalLines(false);
-        logTable.setFillsViewportHeight(true);
-        logTable.setSelectionBackground(new Color(184, 207, 229));
-        ((DefaultTableCellRenderer) logTable.getTableHeader()
-            .getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+        // logTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        // logTable.setRowHeight(34);
+        // logTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        // logTable.getTableHeader().setBackground(new Color(0, 102, 204));
+        // logTable.getTableHeader().setForeground(Color.WHITE);
+        // logTable.setGridColor(new Color(230, 230, 230));
+        // logTable.setShowVerticalLines(false);
+        // logTable.setFillsViewportHeight(true);
+        // logTable.setSelectionBackground(new Color(184, 207, 229));
+        // ((DefaultTableCellRenderer) logTable.getTableHeader()
+        //     .getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
 
-        // colour Status column text
-        logTable.getColumnModel().getColumn(3).setCellRenderer(
-            new DefaultTableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(
-                        JTable t, Object v, boolean sel, boolean foc, int row, int col) {
-                    super.getTableCellRendererComponent(t,v,sel,foc,row,col);
-                    setHorizontalAlignment(JLabel.CENTER);
-                    if (!sel) {
-                        String s = v!=null ? v.toString() : "";
-                        switch (s) {
-                            case "Present": setForeground(CLR_PRESENT); break;
-                            case "Absent":  setForeground(CLR_ABSENT);  break;
-                            case "Late":    setForeground(new Color(180,130,0)); break;
-                            default:        setForeground(Color.BLACK);
-                        }
-                    }
-                    return this;
-                }
-            });
+        // // colour Status column text
+        // logTable.getColumnModel().getColumn(3).setCellRenderer(
+        //     new DefaultTableCellRenderer() {
+        //         @Override
+        //         public Component getTableCellRendererComponent(
+        //                 JTable t, Object v, boolean sel, boolean foc, int row, int col) {
+        //             super.getTableCellRendererComponent(t,v,sel,foc,row,col);
+        //             setHorizontalAlignment(JLabel.CENTER);
+        //             if (!sel) {
+        //                 String s = v!=null ? v.toString() : "";
+        //                 switch (s) {
+        //                     case "Present": setForeground(CLR_PRESENT); break;
+        //                     case "Absent":  setForeground(CLR_ABSENT);  break;
+        //                     case "Late":    setForeground(new Color(180,130,0)); break;
+        //                     default:        setForeground(Color.BLACK);
+        //                 }
+        //             }
+        //             return this;
+        //         }
+        //     });
 
-        JScrollPane logScroll = new JScrollPane(logTable);
-        logScroll.setBounds(730, 270, 420, 400);
-        logScroll.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
-        logScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        main.add(logScroll);
+        // JScrollPane logScroll = new JScrollPane(logTable);
+        // logScroll.setBounds(730, 270, 420, 400);
+        // logScroll.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
+        // logScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        // main.add(logScroll);
+
+        // // ── Already-marked badge label ──
+        // JLabel lblAlreadyMarked = new JLabel();
+        // lblAlreadyMarked.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        // lblAlreadyMarked.setForeground(CLR_PRESENT);
+        // lblAlreadyMarked.setBounds(730, 678, 420, 22);
+        // main.add(lblAlreadyMarked);
+
+        // ── View Today's Log Button ──
+        JButton btnTodayLog = UIUtils.colorButton(
+            "📋  Today's Attendance Log",
+            new Color(0, 102, 153),
+            730, 640, 420, 42);
+        btnTodayLog.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        main.add(btnTodayLog);
 
         // ── Already-marked badge label ──
         JLabel lblAlreadyMarked = new JLabel();
         lblAlreadyMarked.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblAlreadyMarked.setForeground(CLR_PRESENT);
-        lblAlreadyMarked.setBounds(730, 678, 420, 22);
+        lblAlreadyMarked.setBounds(30, 678, 680, 22);
         main.add(lblAlreadyMarked);
 
         add(main);
@@ -344,6 +363,9 @@ public class AttendanceForm extends JFrame {
             loadStudentsForAttendance();
             checkAlreadyMarked(lblAlreadyMarked);
         });
+
+        btnTodayLog.addActionListener(e ->
+            UIUtils.openFullScreen(new TodayAttendanceLog()));
 
         btnMarkAllPresent.addActionListener(e -> markAllPresent());
 

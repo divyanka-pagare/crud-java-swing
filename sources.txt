@@ -11,6 +11,7 @@ C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\constants\UIConstant
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\db\DBConnection.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\attendance\AttendanceForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\attendance\AttendanceReport.java
+C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\attendance\TodayAttendanceLog.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\CourseForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\master\TeacherForm.java
 C:\Users\dell\Documents\crud-java-swing\crud-java-swing\src\forms\report\FeesCollectionReport.java
