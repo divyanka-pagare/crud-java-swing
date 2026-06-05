@@ -1,20 +1,20 @@
--- CREATE DATABASE studentdb;
+CREATE DATABASE studentdb;
 
--- USE studentdb;
+USE studentdb;
 
--- CREATE TABLE students (
---     id INT PRIMARY KEY AUTO_INCREMENT,
---     name VARCHAR(100),
---     email VARCHAR(100),
---     password VARCHAR(100),
---     phone VARCHAR(15),
---     gender VARCHAR(20),
---     skills VARCHAR(200),
---     country VARCHAR(50),
---     age INT,
---     address TEXT,
---     bio TEXT
--- );
+CREATE TABLE students (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    password VARCHAR(100),
+    phone VARCHAR(15),
+    gender VARCHAR(20),
+    skills VARCHAR(200),
+    country VARCHAR(50),
+    age INT,
+    address TEXT,
+    bio TEXT
+);
 
 USE studentdb;
 
