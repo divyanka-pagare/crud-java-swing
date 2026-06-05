@@ -276,8 +276,7 @@ public class AttendanceForm extends JFrame {
                         case "Present": c.setBackground(new Color(236, 253, 240)); break;
                         case "Absent":  c.setBackground(new Color(255, 235, 235)); break;
                         case "Late":    c.setBackground(new Color(255, 248, 220)); break;
-                        default:        c.setBackground(row%2==0 ? Color.WHITE
-                                            : new Color(245,247,250));
+                        default:        c.setBackground(row%2==0 ? Color.WHITE : new Color(245,247,250));
                     }
                 } else {
                     c.setBackground(new Color(184, 207, 229));
@@ -285,7 +284,7 @@ public class AttendanceForm extends JFrame {
                 return c;
             }
         };
-
+   
         // logTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         // logTable.setRowHeight(34);
         // logTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
