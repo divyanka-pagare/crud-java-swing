@@ -31,6 +31,35 @@
 - Student Enquiry
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/fdf2c02e-b4ff-43ae-ac61-80048d87cd0d" />
 
+## Attendance
+
+```
+Teacher PC (Java Swing)
+        |
+Generate QR
+        |
+        ▼
+QR contains URL
+http://YOUR_IP:8080/attendance?token=ABC123
+        |
+        ▼
+Student Mobile
+        |
+Google Lens
+        |
+Browser Opens
+        |
+Attendance Form
+        |
+Submit
+        |
+Spring Boot API
+        |
+MySQL
+        |
+Attendance Table Updated
+
+```
 
 ## Report
 
