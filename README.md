@@ -33,6 +33,7 @@
 
 ## Attendance
 
+```
 Teacher PC (Java Swing)
         |
 Generate QR
@@ -58,7 +59,7 @@ MySQL
         |
 Attendance Table Updated
 
-
+```
 
 ## Report
 
