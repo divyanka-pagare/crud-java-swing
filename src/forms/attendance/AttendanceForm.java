@@ -32,14 +32,13 @@ public class AttendanceForm extends JFrame {
     // ===== ATTENDANCE TABLE =====
     JTable            attendanceTable;
     DefaultTableModel tableModel;
+    JComboBox<String> logCourseFilter;
+    JTable            logTable;
+    DefaultTableModel logModel;
 
     // ===== SUMMARY STRIP =====
     JPanel summaryPanel;
 
-    // ===== RECENT LOG TABLE =====
-    JTable            logTable;
-    DefaultTableModel logModel;
-    JComboBox<String> logCourseFilter;
 
     // ===== DATA =====
     Connection        con;
@@ -66,29 +65,29 @@ public class AttendanceForm extends JFrame {
         con = DBConnection.getConnection();
 
         JPanel main = UIUtils.mainPanel();
+        main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // ── Page Title ──
         JLabel title = UIUtils.bold("Mark Attendance", 28);
         title.setBounds(30, 12, 400, 42);
         main.add(title);
 
+
+        
         // ─────────────────────────────────────────
         //  FILTER BAR
         // ─────────────────────────────────────────
         JPanel filterBar = new JPanel(null);
         filterBar.setBackground(Color.WHITE);
         filterBar.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
-        filterBar.setBounds(30, 62, 1120, 70);
+        filterBar.setBounds(30, 62, 1160, 70);
         main.add(filterBar);
 
         // Course label + dropdown
         JLabel lCourse = UIUtils.plain("Course:", 13);
         lCourse.setBounds(15, 22, 60, 26);
         filterBar.add(lCourse);
-        logCourseFilter = new JComboBox<>();
-        logCourseFilter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        logCourseFilter.setBounds(920, 238, 230, 28);
-        main.add(logCourseFilter);
+       
 
         courseBox = new JComboBox<>();
         courseBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -131,7 +130,7 @@ public class AttendanceForm extends JFrame {
         summaryPanel = new JPanel(null);
         summaryPanel.setBackground(new Color(245, 247, 250));
         summaryPanel.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
-        summaryPanel.setBounds(30, 145, 1120, 80);
+        summaryPanel.setBounds(730, 180, 400, 320);
         main.add(summaryPanel);
 
         lblTotalStudents = summaryItem(summaryPanel, "Total Students", "0",
@@ -154,7 +153,7 @@ public class AttendanceForm extends JFrame {
         //  LEFT — ATTENDANCE TABLE
         // ─────────────────────────────────────────
         JLabel lAttTitle = UIUtils.bold("Students", 14);
-        lAttTitle.setBounds(30, 238, 200, 28);
+        lAttTitle.setBounds(30, 145, 200, 28);
         main.add(lAttTitle);
 
         // table columns: #, Student Name, Status (radio-style), Remarks
@@ -225,7 +224,7 @@ public class AttendanceForm extends JFrame {
         attendanceTable.getColumnModel().getColumn(0).setCellRenderer(centerR);
 
         JScrollPane attScroll = new JScrollPane(attendanceTable);
-        attScroll.setBounds(30, 270, 680, 400);
+        attScroll.setBounds(30, 180, 680, 450);
         attScroll.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
         attScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         main.add(attScroll);
@@ -246,96 +245,41 @@ public class AttendanceForm extends JFrame {
         // ─────────────────────────────────────────
         //  RIGHT — RECENT ATTENDANCE LOG
         // ─────────────────────────────────────────
-        // JLabel lLogTitle = UIUtils.bold("Recent Attendance Log", 14);
-        // lLogTitle.setBounds(730, 238, 280, 28);
-        // main.add(lLogTitle);
 
-        // JLabel lLogFilter = UIUtils.plain("Filter:", 12);
-        // lLogFilter.setBounds(730, 242, 45, 20);
-        // main.add(lLogFilter);
+        // logCourseFilter = new JComboBox<>();
+        
+        // String[] logCols = {"Date", "Student", "Course", "Status"};
+        // logModel = new DefaultTableModel(logCols, 0) {
+        //     public boolean isCellEditable(int r, int c) { return false; }
+        // };
 
-        logCourseFilter = new JComboBox<>();
-        logCourseFilter.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        logCourseFilter.setBounds(920, 238, 230, 28);
-        main.add(logCourseFilter);
-
-        String[] logCols = {"Date", "Student", "Course", "Status"};
-        logModel = new DefaultTableModel(logCols, 0) {
-            public boolean isCellEditable(int r, int c) { return false; }
-        };
-
-        logTable = new JTable(logModel) {
-            @Override
-            public Component prepareRenderer(
-                    javax.swing.table.TableCellRenderer r, int row, int col) {
-                Component c = super.prepareRenderer(r, row, col);
-                if (!isRowSelected(row)) {
-                    String status = logModel.getValueAt(row, 3) != null
-                        ? logModel.getValueAt(row, 3).toString() : "";
-                    switch (status) {
-                        case "Present": c.setBackground(new Color(236, 253, 240)); break;
-                        case "Absent":  c.setBackground(new Color(255, 235, 235)); break;
-                        case "Late":    c.setBackground(new Color(255, 248, 220)); break;
-                        default:        c.setBackground(row%2==0 ? Color.WHITE : new Color(245,247,250));
-                    }
-                } else {
-                    c.setBackground(new Color(184, 207, 229));
-                }
-                return c;
-            }
-        };
-   
-        // logTable.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        // logTable.setRowHeight(34);
-        // logTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
-        // logTable.getTableHeader().setBackground(new Color(0, 102, 204));
-        // logTable.getTableHeader().setForeground(Color.WHITE);
-        // logTable.setGridColor(new Color(230, 230, 230));
-        // logTable.setShowVerticalLines(false);
-        // logTable.setFillsViewportHeight(true);
-        // logTable.setSelectionBackground(new Color(184, 207, 229));
-        // ((DefaultTableCellRenderer) logTable.getTableHeader()
-        //     .getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
-
-        // // colour Status column text
-        // logTable.getColumnModel().getColumn(3).setCellRenderer(
-        //     new DefaultTableCellRenderer() {
-        //         @Override
-        //         public Component getTableCellRendererComponent(
-        //                 JTable t, Object v, boolean sel, boolean foc, int row, int col) {
-        //             super.getTableCellRendererComponent(t,v,sel,foc,row,col);
-        //             setHorizontalAlignment(JLabel.CENTER);
-        //             if (!sel) {
-        //                 String s = v!=null ? v.toString() : "";
-        //                 switch (s) {
-        //                     case "Present": setForeground(CLR_PRESENT); break;
-        //                     case "Absent":  setForeground(CLR_ABSENT);  break;
-        //                     case "Late":    setForeground(new Color(180,130,0)); break;
-        //                     default:        setForeground(Color.BLACK);
-        //                 }
+        // logTable = new JTable(logModel) {
+        //     @Override
+        //     public Component prepareRenderer(
+        //             javax.swing.table.TableCellRenderer r, int row, int col) {
+        //         Component c = super.prepareRenderer(r, row, col);
+        //         if (!isRowSelected(row)) {
+        //             String status = logModel.getValueAt(row, 3) != null
+        //                 ? logModel.getValueAt(row, 3).toString() : "";
+        //             switch (status) {
+        //                 case "Present": c.setBackground(new Color(236, 253, 240)); break;
+        //                 case "Absent":  c.setBackground(new Color(255, 235, 235)); break;
+        //                 case "Late":    c.setBackground(new Color(255, 248, 220)); break;
+        //                 default:        c.setBackground(row%2==0 ? Color.WHITE : new Color(245,247,250));
         //             }
-        //             return this;
+        //         } else {
+        //             c.setBackground(new Color(184, 207, 229));
         //         }
-        //     });
-
-        // JScrollPane logScroll = new JScrollPane(logTable);
-        // logScroll.setBounds(730, 270, 420, 400);
-        // logScroll.setBorder(BorderFactory.createLineBorder(new Color(210, 215, 220)));
-        // logScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        // main.add(logScroll);
-
-        // // ── Already-marked badge label ──
-        // JLabel lblAlreadyMarked = new JLabel();
-        // lblAlreadyMarked.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        // lblAlreadyMarked.setForeground(CLR_PRESENT);
-        // lblAlreadyMarked.setBounds(730, 678, 420, 22);
-        // main.add(lblAlreadyMarked);
+        //         return c;
+        //     }
+        // };
+   
 
         // ── View Today's Log Button ──
         JButton btnTodayLog = UIUtils.colorButton(
             "📋  Today's Attendance Log",
             new Color(0, 102, 153),
-            730, 640, 420, 42);
+            730, 550, 420, 42);
         btnTodayLog.setFont(new Font("Segoe UI", Font.BOLD, 14));
         main.add(btnTodayLog);
 
@@ -352,8 +296,6 @@ public class AttendanceForm extends JFrame {
         //  LOAD DATA
         // ─────────────────────────────────────────
         loadCourseDropdown();
-        loadLogCourseFilter();
-        loadRecentLog(null);
 
         // ─────────────────────────────────────────
         //  LISTENERS
@@ -371,13 +313,6 @@ public class AttendanceForm extends JFrame {
         btnSaveAll.addActionListener(e -> saveAttendance());
 
         btnClear.addActionListener(e -> clearForm());
-
-        logCourseFilter.addActionListener(e -> {
-            Object sel = logCourseFilter.getSelectedItem();
-            if (sel == null) return;
-            String filter = sel.toString();
-            loadRecentLog(filter.equals("All Courses") ? null : filter);
-        });
 
         setVisible(true);
     }
@@ -402,17 +337,6 @@ public class AttendanceForm extends JFrame {
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
-    private void loadLogCourseFilter() {
-        logCourseFilter.removeAllItems();
-        logCourseFilter.addItem("All Courses");
-        try {
-            pst = con.prepareStatement(
-                "SELECT course_name FROM courses ORDER BY course_name");
-            rs = pst.executeQuery();
-            while (rs.next())
-                logCourseFilter.addItem(rs.getString("course_name"));
-        } catch (Exception ex) { ex.printStackTrace(); }
-    }
 
     // ─────────────────────────────────────────
     //  LOAD STUDENTS FOR SELECTED COURSE + DATE
@@ -592,8 +516,6 @@ public class AttendanceForm extends JFrame {
             String msg = saved + " attendance record(s) saved.";
             if (skipped > 0) msg += "\n" + skipped + " row(s) skipped (no status selected).";
             JOptionPane.showMessageDialog(this, msg, "Saved", JOptionPane.INFORMATION_MESSAGE);
-
-            loadRecentLog(null);
             updateSummaryCounts();
 
         } catch (Exception ex) {
@@ -679,7 +601,8 @@ public class AttendanceForm extends JFrame {
     private JLabel summaryItem(JPanel parent, String heading,
                                 String value, Color accent, int index) {
         int cardW = 275, gap = 10;
-        int x = gap + index * (cardW + gap);
+        int x = 10;
+        int y = 10 + index * 75;
 
         JPanel card = new JPanel(null) {
             @Override protected void paintComponent(Graphics g) {
@@ -690,7 +613,7 @@ public class AttendanceForm extends JFrame {
         };
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-        card.setBounds(x, 10, cardW, 60);
+        card.setBounds(x, y, cardW, 60);
         parent.add(card);
 
         JPanel dot = new JPanel();

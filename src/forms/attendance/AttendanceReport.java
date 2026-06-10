@@ -11,6 +11,8 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +83,7 @@ public class AttendanceReport extends JFrame {
         // ── Student Wise sub-panel ──
         studentWisePanel = new JPanel(null);
         studentWisePanel.setBackground(Color.WHITE);
-        studentWisePanel.setBounds(260, 5, 700, 60);
+        studentWisePanel.setBounds(260, 5, 900, 60);
         filterBar.add(studentWisePanel);
 
         studentWisePanel.add(lbl("Course:", 0, 20));
@@ -89,7 +91,7 @@ public class AttendanceReport extends JFrame {
         studentWisePanel.add(courseFilterBox);
 
         JButton btnGenStu = UIUtils.colorButton("Generate",
-            UIUtils.CLR_BLUE, 315, 18, 110, 32);
+            UIUtils.CLR_BLUE, 315, 18, 150, 32);
         studentWisePanel.add(btnGenStu);
         btnGenStu.addActionListener(e -> generateReport());
 
@@ -113,7 +115,7 @@ public class AttendanceReport extends JFrame {
         // ── Date Wise sub-panel ──
         dateWisePanel = new JPanel(null);
         dateWisePanel.setBackground(Color.WHITE);
-        dateWisePanel.setBounds(260, 5, 700, 60);
+        dateWisePanel.setBounds(260, 5, 1000, 60);
         dateWisePanel.setVisible(false);
         filterBar.add(dateWisePanel);
 
@@ -134,8 +136,8 @@ public class AttendanceReport extends JFrame {
         dateWisePanel.add(spinTo);
 
         JButton btnGenDate = UIUtils.colorButton("Generate",
-            UIUtils.CLR_BLUE, 628, 18, 110, 32);
-        dateWisePanel.add(btnGenDate);
+            UIUtils.CLR_BLUE, 628, 18, 100, 32);
+            dateWisePanel.add(btnGenDate);
 
         // ─────────────────────────────────────────
         //  SUMMARY STRIP
@@ -326,7 +328,7 @@ public class AttendanceReport extends JFrame {
             }
 
             TableUtils.resizeColumnWidth(reportTable);
-            adjustTablePosition(false);
+            adjustTablePosition(alertPanel.isVisible());
 
         } catch (Exception ex) { ex.printStackTrace(); }
     }
@@ -351,7 +353,7 @@ public class AttendanceReport extends JFrame {
             int total  = 0; double sumPct = 0;
 
             while (rs.next()) {
-                Date d   = rs.getDate("attendance_date");
+                java.sql.Date d = rs.getDate("attendance_date");
                 int  tot = rs.getInt("total");
                 int  pre = rs.getInt("present_count");
                 double pct = tot > 0 ? (pre * 100.0 / tot) : 0;
@@ -383,6 +385,33 @@ public class AttendanceReport extends JFrame {
     //  GENERATE REPORT — Date Wise
     // ─────────────────────────────────────────
     private void generateReportDateWise(JComboBox<String> courseBox) {
+
+        Date fromDate = (Date) spinFrom.getValue();
+        Date toDate   = (Date) spinTo.getValue();
+        Date today    = new Date();
+
+        // 1. prevent future dates
+        if (fromDate.after(today) || toDate.after(today)) {
+            JOptionPane.showMessageDialog(this,
+                "Future dates are not allowed.",
+                "Invalid Date Range",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 2. prevent invalid range
+        if (fromDate.after(toDate)) {
+            JOptionPane.showMessageDialog(this,
+                "'From Date' cannot be greater than 'To Date'.",
+                "Invalid Range",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String from = new java.text.SimpleDateFormat("yyyy-MM-dd").format(fromDate);
+        String to   = new java.text.SimpleDateFormat("yyyy-MM-dd").format(toDate);
+
+
         reportModel.setRowCount(0);
         reportModel.setColumnIdentifiers(new String[]{
             "#","Student","Status","Remarks"});
@@ -392,9 +421,7 @@ public class AttendanceReport extends JFrame {
             ? courseBox.getSelectedItem().toString() : "";
         if (cName.isEmpty()) return;
 
-        String from = spinDate(spinFrom);
-        String to   = spinDate(spinTo);
-
+        
         try {
             int cid = getCourseId(cName);
             PreparedStatement ps = con.prepareStatement(
@@ -422,6 +449,7 @@ public class AttendanceReport extends JFrame {
                 });
             }
 
+            
             lblTotalClasses .setText(String.valueOf(rowNum-1));
             lblAvgAttendance.setText(rowNum>1
                 ? String.format("%.2f%%",(p*100.0/(rowNum-1))) : "0%");
@@ -480,7 +508,7 @@ public class AttendanceReport extends JFrame {
             }
 
             TableUtils.resizeColumnWidth(reportTable);
-            adjustTablePosition(false);
+            adjustTablePosition(alertPanel.isVisible());
         } catch (Exception ex) { ex.printStackTrace(); }
     }
 
@@ -488,9 +516,9 @@ public class AttendanceReport extends JFrame {
     //  TABLE POSITION
     // ─────────────────────────────────────────
     private void adjustTablePosition(boolean alertVisible) {
-        int tableY = alertVisible ? 292 : 258;
+        int tableY = alertPanel.isVisible() ? 292 : 248;
         int tableH = getHeight() - tableY - 50;
-        reportScroll.setBounds(30, tableY, 1120, Math.max(tableH, 200));
+        reportScroll.setBounds(30, tableY, 1120, Math.max(tableH, 150));
         revalidate(); repaint();
     }
 
@@ -524,9 +552,26 @@ public class AttendanceReport extends JFrame {
     //  HELPERS
     // ─────────────────────────────────────────
     private JSpinner dateSpin() {
-        JSpinner s = new JSpinner(new SpinnerDateModel());
+        Calendar cal = Calendar.getInstance();
+    
+        // max allowed date = today
+        Date maxDate = cal.getTime();
+    
+        // min date (optional, adjust if needed)
+        cal.add(Calendar.YEAR, -10);
+        Date minDate = cal.getTime();
+    
+        SpinnerDateModel model = new SpinnerDateModel(
+            maxDate,   // default value
+            minDate,   // minimum
+            maxDate,   // maximum (IMPORTANT)
+            Calendar.DAY_OF_MONTH
+        );
+    
+        JSpinner s = new JSpinner(model);
         s.setEditor(new JSpinner.DateEditor(s, "dd-MM-yyyy"));
         s.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+    
         return s;
     }
 
@@ -590,6 +635,11 @@ public class AttendanceReport extends JFrame {
 
         return lVal;
     }
+
+    private boolean isFutureDate(String dateStr) {
+        return LocalDate.parse(dateStr).isAfter(LocalDate.now());
+    }
+    
 
     // suppress unchecked for varargs
     @SuppressWarnings("unchecked")
