@@ -10,6 +10,7 @@ import src.forms.transaction.FeesReceiptForm;
 import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.StudentEnquiryForm;
 import src.forms.report.FeesCollectionReport;
+import src.forms.attendance.QRAttendanceForm;
 
 import src.utils.UIUtils;
 
@@ -59,7 +60,7 @@ public class MainMenu extends JFrame {
         attendance.add(createMenuItem("Mark Attendance",           () -> UIUtils.openFullScreen(new AttendanceForm())));
         attendance.add(createMenuItem("Today's Log",               () -> UIUtils.openFullScreen(new TodayAttendanceLog())));      
         attendance.add(createMenuItem("Attendance Report",         () -> UIUtils.openFullScreen(new AttendanceReport())));
-        
+        attendance.add(createMenuItem("QR Attendance",        () -> UIUtils.openFullScreen(new QRAttendanceForm())));
         // attendance.add(createMenuItem("Monthly Attendance Report",   () -> UIUtils.openFullScreen(new MonthlyAttendanceReportForm())));
         // attendance.add(createMenuItem("Attendance Percentage",       () -> UIUtils.openFullScreen(new AttendancePercentageForm())));
         // attendance.add(createMenuItem("Defaulter List",              () -> UIUtils.openFullScreen(new DefaulterListForm())));

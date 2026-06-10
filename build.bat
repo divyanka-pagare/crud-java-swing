@@ -10,7 +10,7 @@ if not exist out (
 
 dir /s /b src\*.java > sources.txt
 
-javac -cp ".;lib\mysql-connector-j-9.7.0\mysql-connector-j-9.7.0.jar" -d out @sources.txt
+javac -cp ".;lib\mysql-connector-j-9.7.0\mysql-connector-j-9.7.0.jar;lib\core-3.5.2.jar;lib\javase-3.5.2.jar" -d out @sources.txt
 
 if %ERRORLEVEL% == 0 (
     echo.
@@ -19,7 +19,7 @@ if %ERRORLEVEL% == 0 (
     echo ================================
     echo.
 
-    java -cp "out;lib\mysql-connector-j-9.7.0\mysql-connector-j-9.7.0.jar" src.MainMenu
+    java -cp "out;lib\mysql-connector-j-9.7.0\mysql-connector-j-9.7.0.jar;lib\core-3.5.2.jar;lib\javase-3.5.2.jar" src.MainMenu
 ) else (
     echo.
     echo ================================

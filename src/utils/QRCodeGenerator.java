@@ -2,11 +2,12 @@ package src.utils;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+// import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-
+// import com.google.zxing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class QRCodeGenerator {
         hints.put(EncodeHintType.MARGIN, 2);
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
-        QRCodeWriter writer = new QRCodeWriter();
+        MultiFormatWriter writer = new MultiFormatWriter();
         BitMatrix matrix  = writer.encode(
             content, BarcodeFormat.QR_CODE, width, height, hints);
 
