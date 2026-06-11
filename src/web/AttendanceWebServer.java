@@ -20,11 +20,30 @@ public class AttendanceWebServer {
                     (HttpExchange exchange) -> {
 
                         String response =
-                                "<html>" +
-                                "<body>" +
-                                "<h1>Attendance Page Working</h1>" +
-                                "</body>" +
-                                "</html>";
+                            "<html>" +
+                            "<head>" +
+                            "<title>Attendance</title>" +
+                            "</head>" +
+                            "<body>" +
+
+                            "<h2>Student Attendance</h2>" +
+
+                            "<form>" +
+
+                            "Student ID:<br>" +
+                            "<input type='text' name='studentId'><br><br>" +
+
+                            "Student Name:<br>" +
+                            "<input type='text' name='studentName'><br><br>" +
+
+                            "<button type='submit'>" +
+                            "Mark Attendance" +
+                            "</button>" +
+
+                            "</form>" +
+
+                            "</body>" +
+                            "</html>";
 
                         exchange.sendResponseHeaders(
                                 200,
