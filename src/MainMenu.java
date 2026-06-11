@@ -11,6 +11,8 @@ import src.forms.transaction.RegistrationForm;
 import src.forms.transaction.StudentEnquiryForm;
 import src.forms.report.FeesCollectionReport;
 import src.forms.attendance.QRAttendanceForm;
+import src.web.AttendanceWebServer;
+
 
 import src.utils.UIUtils;
 
@@ -232,5 +234,9 @@ public class MainMenu extends JFrame {
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(MainMenu::new);
+
+        AttendanceWebServer.start();
+
+        new MainMenu().setVisible(true);
     }
 }

@@ -16,6 +16,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Timer;
@@ -382,14 +386,41 @@ public class QRAttendanceForm extends JFrame {
         currentCourseId = course.getId();
         currentDate     = getSelectedDate();
         currentToken    = QRCodeGenerator.generateToken();
+
+        try {
+
+            Connection con =
+                DBConnection.getConnection();
+        
+            PreparedStatement pst =
+                con.prepareStatement(
+                    "INSERT INTO qr_sessions " +
+                    "(token, course_id, attendance_date, expiry_time, active) " +
+                    "VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE), TRUE)"
+                );
+        
+            pst.setString(1, currentToken);
+            pst.setInt(2, currentCourseId);
+        
+            pst.setDate(
+                3,
+                java.sql.Date.valueOf(LocalDate.now())
+            );
+        
+            pst.executeUpdate();
+        
+            pst.close();
+        
+        } catch (SQLException ex) {
+        
+            ex.printStackTrace();
+        
+        }
+
         sessionActive   = true;
         secondsLeft     = QR_VALID_SECONDS;
 
-        String content = QRCodeGenerator.buildContent(
-            currentCourseId,
-            course.getCourseName(),
-            currentDate,
-            currentToken);
+        String content = "http://192.168.1.9:8080/attendance?token=" + currentToken;
 
         try {
             BufferedImage qrImage = QRCodeGenerator.generate(content, 280, 280);
