@@ -61,6 +61,29 @@ Attendance Table Updated
 
 ```
 
+- Output
+
+```
+Teacher generates QR
+        ↓
+QR token stored in database
+        ↓
+Student scans QR
+        ↓
+Mobile attendance form opens
+        ↓
+Student enters ID and Name
+        ↓
+Validation against students table
+        ↓
+Duplicate attendance check
+        ↓
+Attendance stored in attendance table
+        ↓
+Success/Error message shown
+
+```
+
 ## Report
 
 - Fees Collection Report - Date Wise
