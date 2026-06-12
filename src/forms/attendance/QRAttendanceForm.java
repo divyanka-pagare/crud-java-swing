@@ -5,6 +5,7 @@ import src.models.Course;
 import src.utils.QRCodeGenerator;
 import src.utils.TableUtils;
 import src.utils.UIUtils;
+import src.web.AttendanceWebServer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -17,9 +18,6 @@ import java.io.File;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Timer;
@@ -44,6 +42,10 @@ public class QRAttendanceForm extends JFrame {
     JTextField txtStudentSearch;
     JButton    btnScan;
     JLabel     lblScanFeedback;
+
+    JTextField txtPin;
+    JTextField txtAllowedIp;
+    JLabel     lblServerIp;
 
     // ===== ATTENDANCE TABLE =====
     JTable            attTable;
@@ -101,7 +103,7 @@ public class QRAttendanceForm extends JFrame {
         filterBar.setBackground(Color.WHITE);
         filterBar.setBorder(BorderFactory.createLineBorder(
             new Color(210, 215, 220)));
-        filterBar.setBounds(30, 72, 1120, 62);
+        filterBar.setBounds(30, 72, 1120, 110);
         main.add(filterBar);
 
         JLabel lCrs = UIUtils.plain("Course:", 13);
@@ -125,14 +127,37 @@ public class QRAttendanceForm extends JFrame {
         datePicker.setValue(Calendar.getInstance().getTime());
         filterBar.add(datePicker);
 
+        // PIN field
+        JLabel lPin = UIUtils.plain("Session PIN:", 13);
+        lPin.setBounds(590, 18, 90, 26);
+        filterBar.add(lPin);
+
+        txtPin = new JTextField("0000");
+        txtPin.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        txtPin.setHorizontalAlignment(JTextField.CENTER);
+        txtPin.setBounds(684, 16, 80, 32);
+        filterBar.add(txtPin);
+
+        // Allowed IP (WiFi subnet)
+        JLabel lIp = UIUtils.plain("WiFi Subnet:", 13);
+        lIp.setBounds(780, 18, 90, 26);
+        filterBar.add(lIp);
+
+        txtAllowedIp = new JTextField("192.168.1");
+        txtAllowedIp.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        txtAllowedIp.setToolTipText(
+            "Enter first 3 parts of classroom WiFi IP e.g. 192.168.1");
+        txtAllowedIp.setBounds(874, 16, 120, 32);
+        filterBar.add(txtAllowedIp);
+
         btnGenerate = UIUtils.colorButton(
-            "Generate QR", CLR_ACTIVE, 590, 14, 140, 34);
+            "Generate QR", CLR_ACTIVE, 15, 68, 140, 34);
         btnRefresh  = UIUtils.colorButton(
-            "Refresh", UIUtils.CLR_GRAY, 744, 14, 100, 34);
+            "Refresh", UIUtils.CLR_GRAY, 169, 68, 100, 34);
         btnExpire   = UIUtils.colorButton(
-            "Expire QR", CLR_EXPIRED, 858, 14, 110, 34);
+            "Expire QR", CLR_EXPIRED, 283, 68, 110, 34);
         btnSaveQR   = UIUtils.colorButton(
-            "Save QR Image", new Color(40, 167, 69), 982, 14, 140, 34);
+            "Save QR Image", new Color(40, 167, 69), 407, 68, 140, 34);
 
         filterBar.add(btnGenerate);
         filterBar.add(btnRefresh);
@@ -141,6 +166,8 @@ public class QRAttendanceForm extends JFrame {
 
         btnExpire .setEnabled(false);
         btnSaveQR .setEnabled(false);
+
+
 
         // ─────────────────────────────────────────
         //  LEFT — QR CODE CARD
@@ -211,6 +238,14 @@ public class QRAttendanceForm extends JFrame {
         lblScanCount.setHorizontalAlignment(JLabel.CENTER);
         lblScanCount.setBounds(50, 470, 300, 24);
         qrCard.add(lblScanCount);
+
+        // Server IP info label
+        lblServerIp = new JLabel();
+        lblServerIp.setFont(new Font("Courier New", Font.PLAIN, 10));
+        lblServerIp.setForeground(new Color(100, 100, 150));
+        lblServerIp.setHorizontalAlignment(JLabel.CENTER);
+        lblServerIp.setBounds(20, 500, 360, 16);
+        qrCard.add(lblServerIp);
 
         // ─────────────────────────────────────────
         //  MIDDLE — SCAN INPUT
@@ -381,54 +416,67 @@ public class QRAttendanceForm extends JFrame {
             return;
         }
 
-        stopTimer(); // stop any existing session
+        String pin = txtPin.getText().trim();
+        if (pin.length() != 4 || !pin.matches("\\d{4}")) {
+            JOptionPane.showMessageDialog(this,
+                "PIN must be exactly 4 digits (e.g. 1234)");
+            txtPin.requestFocus();
+            txtPin.selectAll();
+            return;
+        }
+
+        String allowedIp = txtAllowedIp.getText().trim();
+
+        stopTimer();
 
         currentCourseId = course.getId();
         currentDate     = getSelectedDate();
         currentToken    = QRCodeGenerator.generateToken();
 
         try {
+            // detect local IP for QR URL
+            String localIp = getLocalIp();
+            AttendanceWebServer.SERVER_IP = localIp;
 
-            Connection con =
-                DBConnection.getConnection();
-        
-            PreparedStatement pst =
-                con.prepareStatement(
-                    "INSERT INTO qr_sessions " +
-                    "(token, course_id, attendance_date, expiry_time, active) " +
-                    "VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE), TRUE)"
-                );
-        
-            pst.setString(1, currentToken);
-            pst.setInt(2, currentCourseId);
-        
-            pst.setDate(
-                3,
-                java.sql.Date.valueOf(LocalDate.now())
-            );
-        
-            pst.executeUpdate();
-        
-            pst.close();
-        
-        } catch (SQLException ex) {
-        
+            // save session to DB with PIN + allowed IP
+            PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO qr_sessions " +
+                "(token, course_id, attendance_date, pin, " +
+                " allowed_ip, expiry_time, active) " +
+                "VALUES (?,?,?,?,?," +
+                " DATE_ADD(NOW(), INTERVAL 5 MINUTE), 1)" +
+                " ON DUPLICATE KEY UPDATE " +
+                " pin=VALUES(pin), allowed_ip=VALUES(allowed_ip)," +
+                " expiry_time=DATE_ADD(NOW(), INTERVAL 5 MINUTE)," +
+                " active=1");
+            ps.setString(1, currentToken);
+            ps.setInt(2, currentCourseId);
+            ps.setString(3, currentDate);
+            ps.setString(4, pin);
+            ps.setString(5, allowedIp.isBlank() ? null : allowedIp);
+            ps.executeUpdate();
+
+        } catch (Exception ex) {
             ex.printStackTrace();
-        
+            JOptionPane.showMessageDialog(this,
+                "DB error: " + ex.getMessage());
+            return;
         }
 
-        sessionActive   = true;
-        secondsLeft     = QR_VALID_SECONDS;
+        sessionActive = true;
+        secondsLeft   = QR_VALID_SECONDS;
 
-        String content = "http://192.168.1.9:8080/attendance?token=" + currentToken;
+        // QR contains the real URL students will open
+        String url = "http://" + AttendanceWebServer.SERVER_IP +
+            ":8080/attendance?token=" + currentToken;
 
         try {
-            BufferedImage qrImage = QRCodeGenerator.generate(content, 280, 280);
+            BufferedImage qrImage =
+                QRCodeGenerator.generate(url, 280, 280);
             lblQRImage.setIcon(new ImageIcon(qrImage));
             lblQRImage.setText(null);
             lblQRImage.setBorder(BorderFactory.createLineBorder(
-                new Color(0, 102, 204), 2));
-
+                CLR_ACTIVE, 2));
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
                 "QR generation failed: " + ex.getMessage());
@@ -438,6 +486,9 @@ public class QRAttendanceForm extends JFrame {
         lblQRStatus.setText("● ACTIVE");
         lblQRStatus.setForeground(CLR_PRESENT);
         lblSessionToken.setText("Token: " + currentToken);
+        lblServerIp.setText("URL: " + "http://" +
+            AttendanceWebServer.SERVER_IP +
+            ":8080/attendance?token=...");
         attModel.setRowCount(0);
 
         btnScan   .setEnabled(true);
@@ -448,10 +499,11 @@ public class QRAttendanceForm extends JFrame {
         startTimer();
         refreshTable();
 
-        setFeedback("QR generated for " +
-            course.getCourseName() + " on " + currentDate, CLR_PRESENT);
+        setFeedback("QR generated  |  PIN: " + pin +
+            (allowedIp.isBlank() ? "" : "  |  WiFi: " + allowedIp + ".x"),
+            CLR_PRESENT);
     }
-
+    
     // ─────────────────────────────────────────
     //  TIMER
     // ─────────────────────────────────────────
@@ -704,5 +756,29 @@ public class QRAttendanceForm extends JFrame {
     private void setFeedback(String msg, Color color) {
         lblScanFeedback.setText(msg);
         lblScanFeedback.setForeground(color);
+    }
+
+    private String getLocalIp() {
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> nets =
+                java.net.NetworkInterface.getNetworkInterfaces();
+            while (nets.hasMoreElements()) {
+                java.net.NetworkInterface ni = nets.nextElement();
+                if (ni.isLoopback() || !ni.isUp()) continue;
+                java.util.Enumeration<java.net.InetAddress> addrs =
+                    ni.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
+                    if (addr instanceof java.net.Inet4Address) {
+                        String ip = addr.getHostAddress();
+                        // prefer 192.168 or 10. addresses
+                        if (ip.startsWith("192.168") ||
+                            ip.startsWith("10."))
+                            return ip;
+                    }
+                }
+            }
+        } catch (Exception ex) { ex.printStackTrace(); }
+        return "192.168.1.9"; // fallback
     }
 }

@@ -143,14 +143,14 @@ public class MainMenu extends JFrame {
         cardsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         cardsPanel.add(createCard(
-                "Student Registration",
-                "Register new students",
-                () -> new RegistrationForm()));
+            "Student Registration",
+            "Register new students",
+            () -> UIUtils.openFullScreen(new RegistrationForm())));
 
         cardsPanel.add(createCard(
-                "Student Attendance",
-                "Manage student attendance",
-                () -> new AttendanceForm()));
+            "Student Attendance",
+            "Manage student attendance",
+            () -> UIUtils.openFullScreen(new AttendanceForm())));
 
         centerPanel.add(cardsPanel);
 
@@ -232,11 +232,8 @@ public class MainMenu extends JFrame {
     }
 
     public static void main(String[] args) {
-
+        new Thread(() -> src.web.AttendanceWebServer.start()).start();
         SwingUtilities.invokeLater(MainMenu::new);
-
-        AttendanceWebServer.start();
-
-        new MainMenu().setVisible(true);
     }
+
 }
