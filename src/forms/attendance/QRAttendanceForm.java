@@ -286,7 +286,7 @@ public class QRAttendanceForm extends JFrame {
         //  RIGHT — ATTENDANCE TABLE
         // ─────────────────────────────────────────
         JLabel lAttTitle = UIUtils.bold("Attendance for This Session", 15);
-        lAttTitle.setBounds(550, 148, 700, 28);
+        lAttTitle.setBounds(550, 190, 700, 28);
         main.add(lAttTitle);
 
         String[] cols = {
@@ -352,7 +352,7 @@ public class QRAttendanceForm extends JFrame {
             });
 
         JScrollPane attScroll = UIUtils.scrollPane(
-            attTable, 450, 182, 700, 496);
+            attTable, 500, 220, 650, 450);
         attScroll.setBorder(BorderFactory.createLineBorder(
             new Color(210, 215, 220)));
         main.add(attScroll);
