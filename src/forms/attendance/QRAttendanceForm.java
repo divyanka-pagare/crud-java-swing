@@ -54,7 +54,7 @@ public class QRAttendanceForm extends JFrame {
     // ===== TIMER =====
     Timer      qrTimer;
     int        secondsLeft = 0;
-    static final int QR_VALID_SECONDS = 300; // 5 minutes
+    static final int QR_VALID_SECONDS = 60; // 5 minutes
 
     // ===== STATE =====
     String  currentToken    = null;
@@ -75,7 +75,7 @@ public class QRAttendanceForm extends JFrame {
     public QRAttendanceForm() {
 
         setTitle("QR Code Attendance");
-        setSize(1200, 750);
+        setSize(1400, 750);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -151,13 +151,13 @@ public class QRAttendanceForm extends JFrame {
         filterBar.add(txtAllowedIp);
 
         btnGenerate = UIUtils.colorButton(
-            "Generate QR", CLR_ACTIVE, 15, 68, 140, 34);
+            "Generate QR", CLR_ACTIVE, 150, 68, 140, 34);
         btnRefresh  = UIUtils.colorButton(
-            "Refresh", UIUtils.CLR_GRAY, 169, 68, 100, 34);
+            "Refresh", UIUtils.CLR_GRAY, 320, 68, 100, 34);
         btnExpire   = UIUtils.colorButton(
-            "Expire QR", CLR_EXPIRED, 283, 68, 110, 34);
+            "Expire QR", CLR_EXPIRED, 450, 68, 110, 34);
         btnSaveQR   = UIUtils.colorButton(
-            "Save QR Image", new Color(40, 167, 69), 407, 68, 140, 34);
+            "Save QR Image", new Color(40, 167, 69), 600, 68, 140, 34);
 
         filterBar.add(btnGenerate);
         filterBar.add(btnRefresh);
@@ -176,12 +176,12 @@ public class QRAttendanceForm extends JFrame {
         qrCard.setBackground(Color.WHITE);
         qrCard.setBorder(BorderFactory.createLineBorder(
             new Color(210, 215, 220)));
-        qrCard.setBounds(30, 148, 400, 530);
+        qrCard.setBounds(30, 148, 450, 530);
         main.add(qrCard);
 
-        JLabel lQRTitle = UIUtils.bold("Session QR Code", 16);
-        lQRTitle.setBounds(20, 18, 360, 28);
-        qrCard.add(lQRTitle);
+        // JLabel lQRTitle = UIUtils.bold("Session QR Code", 16);
+        // lQRTitle.setBounds(20, 25, 380, 28);
+        // qrCard.add(lQRTitle);
 
         // QR image label
         lblQRImage = new JLabel();
@@ -286,7 +286,7 @@ public class QRAttendanceForm extends JFrame {
         //  RIGHT — ATTENDANCE TABLE
         // ─────────────────────────────────────────
         JLabel lAttTitle = UIUtils.bold("Attendance for This Session", 15);
-        lAttTitle.setBounds(450, 148, 700, 28);
+        lAttTitle.setBounds(550, 148, 700, 28);
         main.add(lAttTitle);
 
         String[] cols = {
@@ -444,7 +444,7 @@ public class QRAttendanceForm extends JFrame {
                 "(token, course_id, attendance_date, pin, " +
                 " allowed_ip, expiry_time, active) " +
                 "VALUES (?,?,?,?,?," +
-                " DATE_ADD(NOW(), INTERVAL 5 MINUTE), 1)" +
+                " DATE_ADD(NOW(), INTERVAL 60 SECOND), 1)" +
                 " ON DUPLICATE KEY UPDATE " +
                 " pin=VALUES(pin), allowed_ip=VALUES(allowed_ip)," +
                 " expiry_time=DATE_ADD(NOW(), INTERVAL 5 MINUTE)," +
